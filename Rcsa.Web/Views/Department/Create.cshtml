@@ -1,0 +1,43 @@
+﻿@using Rcsa.Web.Models
+@model Rcsa.Web.Models.DepartmentMaster
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new RcsaDb();
+    ViewBag.Title = "Create";
+    int currentUserId = WebSecurity.CurrentUserId;
+    string role = System.Web.Security.Roles.GetRolesForUser().Single();
+    var user = db.CompanyUsers.Where(x => x.UserId == currentUserId).FirstOrDefault();
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">Create Department</h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+    
+        <label>Company</label>
+        if (role.ToLower() == "company")
+        {
+        @*@Html.HiddenFor(m => m.CompanyId, new { id="hfCompany" })*@
+        @Html.DropDownListFor(m => m.CompanyId, new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName",user.CompanyId), "---Select---", new { id = "ddlCompany",disabled="disabled" })
+        @Html.HiddenFor(m => m.CompanyId, new { @Value=user.CompanyId})
+        }
+        else
+        {
+        @Html.DropDownListFor(m => m.CompanyId, new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName"), "---Select---", new { id = "ddlCompany" })
+        }
+        <div class="clear"></div>
+        <label>Department Name</label>
+        @Html.TextBoxFor(model => model.DepartmentName,  new {@MaxLength="100" })
+        <div class="clear"></div>
+        <br />
+        <label>&nbsp;</label>
+        <button type="submit" value="Create" class="button1">Create</button>
+        <label>&nbsp;</label>
+        <br />
+        <br />
+    }
+    <br />
+</div>

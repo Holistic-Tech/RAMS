@@ -1,0 +1,59 @@
+﻿@model Rcsa.Web.Models.LoginModel
+
+@{
+    ViewBag.Title = "Log in";
+}
+@using (Html.BeginForm("Login", "Account",new {ReturnUrl = ViewBag.ReturnUrl}))
+{
+    @Html.AntiForgeryToken()
+    <div id="login">
+        <p>
+            <img src="/images/logo.jpg" style="padding-top: 0px;width:160px;height:160px" /></p>
+        <h1>Sign in with your RAMS Login ID</h1>
+        <fieldset id="inputs">
+            @Html.TextBoxFor(m => m.UserName, new {placeholder="Username", autofocus="", required=""})
+            @Html.PasswordFor(m => m.Password, new { placeholder="Password", required=""})
+        </fieldset>
+        <fieldset id="actions">
+            <input type="submit" id="submit" value="Log in" >
+            <a href="@Url.Action("ForgetPassword", "Account")">Forgot your password?</a>
+            
+        </fieldset>
+            @Html.ValidationSummary(true)
+
+    </div>
+}
+
+@*@using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl })) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend>Log in Form</legend>
+        <ol>
+            <li>
+                @Html.LabelFor(m => m.UserName)
+                @Html.TextBoxFor(m => m.UserName)
+                @Html.ValidationMessageFor(m => m.UserName)
+            </li>
+            <li>
+                @Html.LabelFor(m => m.Password)
+                @Html.PasswordFor(m => m.Password)
+                @Html.ValidationMessageFor(m => m.Password)
+            </li>
+            <li>
+                @Html.CheckBoxFor(m => m.RememberMe)
+                @Html.LabelFor(m => m.RememberMe, new { @class = "checkbox" })
+            </li>
+        </ol>
+        <input type="submit" value="Log in" />
+    </fieldset>
+    <p>
+        @Html.ActionLink("Register", "Register") if you don't have an account.
+    </p>
+}*@
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

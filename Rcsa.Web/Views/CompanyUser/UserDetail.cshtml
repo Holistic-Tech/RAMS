@@ -1,0 +1,85 @@
+﻿@model Rcsa.Web.Models.UserProfile
+
+@{
+    Rcsa.Web.Models.RcsaDb db = new Rcsa.Web.Models.RcsaDb();
+    var companyUser = db.CompanyUsers.FirstOrDefault(x => x.UserId == Model.UserId);
+    string CompanyName = "";
+    int companyId=0;
+    if(companyUser!=null)
+    {
+        companyId=companyUser.CompanyId;
+        var company = db.CompaniesMaster.Where(x => x.CompanyId == companyUser.CompanyId).SingleOrDefault();
+        CompanyName = company.ComapnyName;        
+    }
+    ViewBag.Title = "User Detail";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";    
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">User Details</h3>
+<div class="form1" style="text-align: left; margin-left: 20px">
+     <table id="hor-minimalist-b" style="margin: 7px 10px 62px -20px;line-height:5px;" >
+    <tbody >
+        <tr>
+            <td style="width:216px;">
+                <label>User Id </label>
+            </td>
+           <td>@Model.UserName</td>
+            
+        </tr>
+
+         <tr>
+            <td>
+              <label>User Name </label>
+            </td>
+            <td>
+                @Model.UserName
+            </td>
+            
+        </tr>
+
+
+         <tr>
+            <td>
+                <label>Name </label>
+            </td>
+            <td>
+                 @Model.FirstName @Model.LastName
+            </td>
+            
+        </tr>
+
+
+         <tr>
+            <td>
+                 <label>Email</label>
+            </td>
+            <td>
+                @Model.Email
+            </td>
+            
+        </tr>
+
+
+         <tr>
+            <td>
+                <label>Company Name </label>
+            </td>
+            <td>
+                @CompanyName
+            </td>
+            
+        </tr>
+
+
+       
+       
+       
+
+</tbody></table>
+
+
+</div>
+<div style="float:right;clear:both;margin-bottom:20px;margin-right:40px;text-decoration:underline;">
+    <b>@Html.ActionLink("Return to List", "CompanyUser", new { id=@companyId, page = ViewBag.CurrentlyOnPage})</b>
+</div>
+

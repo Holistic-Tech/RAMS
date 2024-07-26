@@ -1,0 +1,41 @@
+﻿@using Rcsa.Web.ViewModel
+@model Rcsa.Web.Models.UserProfile
+@{
+    ViewBag.Title = "Add Consultant";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center">Edit Consultant</h3>
+
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary()
+        <fieldset>
+
+            <label>User Name</label>
+            @Html.TextBoxFor(m => m.UserName, new { placeholder = "User name", autofocus = "", @MaxLength = "15", @readonly = "readonly" })
+            <div class="clear"></div>
+            <div class="clear"></div>
+            <label>First Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.FirstName, new { placeholder = "First name", autofocus = "", @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Last Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.LastName, new { placeholder = "Last name", autofocus = "", @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Email <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.Email, new { placeholder = "Email", autofocus = "", autocomplete = "off", @MaxLength = "50" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <input type="hidden" value="@Request.QueryString["page"]" name="page" />
+            <button id="btnSave" value="Save" class="button2">Save</button>
+            &nbsp;&nbsp;
+            <button id="btnReset" value="Reset" type="reset" class="button2">Reset</button>
+        </fieldset>
+    }
+</div>
+@section scripts
+{
+}

@@ -1,0 +1,193 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    var profile = db.UserProfiles.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+}
+
+<div class="fix_width">
+    <div class="logo_header">
+        <div class="logo" style="float: left;">
+            <img src="/images/logo.jpg"
+                style="max-width: 200px; max-height: 130px; margin-top: 10px; margin-left: 20px; width: 160px; height: 160px" />
+
+        </div>
+
+        <div class="logo_right">
+
+            <div>
+                <h1 style="font-size: 20px; margin-top: 20px; margin-right: 120px;">Risk and Audit Management System (RAMS)</h1>
+            </div>
+
+            <div style="height: 30px;">
+                &nbsp;
+            </div>
+
+            <div>
+                @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <span style="font-size: medium; font-weight: bold; font-family: open sans; font-size: 14px;">Welcome 
+                <label style="color: #1887bf; font-family: open sans; font-size: 14px;">
+                    @User.Identity.Name
+                </label>
+                    </span> 
+            
+                    <span style="float: right; padding-right: 10px; color: #1887bf; font-family: open sans; font-size: 13px;">
+                        <a href="@Url.Action("Index", "Orm")">
+                            <img src="/images/Home.gif" align="absmiddle" />
+                            HOME </a>
+                            &nbsp;&nbsp;&nbsp;&nbsp; 
+                        <a href="@Url.Action("Login", "Account")">
+                            <img src="/images/logout.gif" align="absmiddle" />
+                            <span style="color: red; font-family: open sans; font-size: 13px;">LOGOUT </span>
+                        </a>
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="section1">
+    <div class="leftside_box">
+        <div class="arrowlistmenu1">
+          
+                <h3 class="menuheader expandable openheader" headerindex="0h"><span class="accordprefix"></span>Security<span class="accordsuffix"></span></h3>
+            
+                <ul class="categoryitems" contentindex="0c" style="display: block;">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li><a href="@Url.Action("Users", "Security")">Users</a></li>
+                        <li><a href="@Url.Action("Roles", "Security")">Roles</a></li>
+                    }
+                    <li><a href="@Url.Action("Manage", "Account")">Change Password</a></li>
+                </ul>
+            <h3 class="menuheader expandable" headerindex="1h"><span class="accordprefix"></span>Master Lists<span class="accordsuffix"></span></h3>
+            <ul class="categoryitems" contentindex="1c" style="display: none;">
+                @if (!User.IsInRole("User") && !User.IsInRole("Manager"))
+                {
+                    <li><a href="@Url.Action("CompanyDetails", "Company")">Manage Companies</a></li>
+
+                    <li><a href="@Url.Action("ConsultantUsers", "ConsultantUser")">Manage Consultants</a></li>
+
+                }
+
+                @if (!User.IsInRole("User") && (profile.IsCompanyStaff ?? false)
+                    && (profile.IsCompanySupervisor ?? false))
+                {
+                    <li><a href="@Url.Action("DepartmentDetails", "Department")">Manage Departments</a></li>
+
+                }
+                @if (User.IsInRole("Consultant") || User.IsInRole("Admin"))
+                {
+                    {
+                        <li><a href="@Url.Action("DepartmentDetails", "Department")">Manage Departments</a></li>
+
+                    }
+                }
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Consultant"))
+                {
+                    <li><a href="@Url.Action("CompanyUser", "CompanyUser")">Manage Company Users</a></li>
+
+                    <li><a href="@Url.Action("UserDepartment", "Security")">Manage Department Users</a></li>
+                }
+                @if (User.IsInRole("Manager"))
+                {
+                    <li><a href="@Url.Action("UserDepartment", "Security")">Manage Department Users</a></li>
+                }
+
+                @if (User.IsInRole("Admin") || User.IsInRole("Consultant"))
+                {
+                    <li><a href="@Url.Action("RiskDetail", "Risk")">Manage Risks</a></li>
+                    <li><a href="@Url.Action("SubRiskDetails", "SubRisk")">Manage Sub Risks</a></li>
+                }
+
+
+                @if (User.IsInRole("Manager") || User.IsInRole("User"))
+                {
+                    <li><a href="@Url.Action("MitigantDetails", "Mitigant")">Add Controls/Mitigants</a></li>
+                }
+                else
+                {
+                    <li><a href="@Url.Action("MitigantDetails", "Mitigant")">Manage Controls/Mitigants</a></li>
+                }
+                <li><a href="@Url.Action("DepartmentRisks", "Orm")">Risk Identification /Risk Assessments</a></li>
+                <li><a href="@Url.Action("ViewRisks", "Orm")">View Risk Already Assessed</a></li>
+                @*<li><a href="@Url.Action("UpdateRisk", "Orm")">Update Risk Assessment</a></li>*@
+            </ul>
+            <h3 class="menuheader expandable" headerindex="2h"><span class="accordprefix"></span>Reports<span class="accordsuffix"></span></h3>
+            <ul class="categoryitems" contentindex="2c" style="display: none;">
+                @*    <li><a href="@Url.Action("UsersReport", "CompanyUsersReport")">Department Report</a></li>*@
+                @*<li><a href="@Url.Action("CustomizedReport", "CompanyUsersReport")">Customized Report 2</a></li>*@
+                @*   <li><a href="@Url.Action("BoardReports", "BoardReport")">Board Report</a></li>*@
+                @*   <li><a href="@Url.Action("StandardReports", "Standard")">Specific Risk Type Report</a></li>*@
+                <li><a href="@Url.Action("DepartmentRisks", "Standard")">Department Report</a></li>
+                <li><a href="@Url.Action("BoardRisk", "Standard")">Board Report</a></li>
+                <li><a href="@Url.Action("SpecificTypeRisk", "Standard")">Specific Risk Type Report</a></li>
+                <li><a href="@Url.Action("Index", "HeatMap")">Heat Map Report</a></li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="middle_box">
+        <div class="middle_innerbox">
+            @RenderBody()
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="/scripts/ddaccordion.js"></script>
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        ddaccordion.init({
+            //top level headers initialization
+            headerclass: "expandable", //Shared CSS class name of headers group that are expandable
+            contentclass: "categoryitems", //Shared CSS class name of contents group
+            revealtype: "click", //Reveal content when user clicks or onmouseover the header? Valid value: "click", "clickgo", or "mouseover"
+            mouseoverdelay: 200, //if revealtype="mouseover", set delay in milliseconds before header expands onMouseover
+            collapseprev: true, //Collapse previous content (so only one open at any time)? true/false 
+            defaultexpanded: [0], //index of content(s) open by default [index1, index2, etc]. [] denotes no content
+            onemustopen: false, //Specify whether at least one header should be open always (so never all headers closed)
+            animatedefault: false, //Should contents open by default be animated into view?
+            persiststate: true, //persist state of opened contents within browser session?
+            toggleclass: ["", "openheader"], //Two CSS classes to be applied to the header when it's collapsed and expanded, respectively ["class1", "class2"]
+            togglehtml: ["prefix", "", ""], //Additional HTML added to the header when it's collapsed and expanded, respectively  ["position", "html1", "html2"] (see docs)
+            animatespeed: "fast", //speed of animation: integer in milliseconds (ie: 200), or keywords "fast", "normal", or "slow"
+            oninit: function (headers, expandedindices) { //custom code to run when headers have initalized
+                //do nothing
+            },
+            onopenclose: function (header, index, state, isuseractivated) { //custom code to run whenever a header is opened or closed
+                //do nothing
+            }
+        });
+
+        ddaccordion.init({
+            //2nd level headers initialization
+            headerclass: "subexpandable", //Shared CSS class name of sub headers group that are expandable
+            contentclass: "subcategoryitems", //Shared CSS class name of sub contents group
+            revealtype: "click", //Reveal content when user clicks or onmouseover the header? Valid value: "click" or "mouseover
+            mouseoverdelay: 200, //if revealtype="mouseover", set delay in milliseconds before header expands onMouseover
+            collapseprev: true, //Collapse previous content (so only one open at any time)? true/false 
+            defaultexpanded: [], //index of content(s) open by default [index1, index2, etc]. [] denotes no content
+            onemustopen: false, //Specify whether at least one header should be open always (so never all headers closed)
+            animatedefault: false, //Should contents open by default be animated into view?
+            persiststate: true, //persist state of opened contents within browser session?
+            toggleclass: ["opensubheader", "closedsubheader"], //Two CSS classes to be applied to the header when it's collapsed and expanded, respectively ["class1", "class2"]
+            togglehtml: ["none", "", ""], //Additional HTML added to the header when it's collapsed and expanded, respectively  ["position", "html1", "html2"] (see docs)
+            animatespeed: "fast", //speed of animation: integer in milliseconds (ie: 200), or keywords "fast", "normal", or "slow"
+            oninit: function (headers, expandedindices) { //custom code to run when headers have initalized
+                //do nothing
+            },
+            onopenclose: function (header, index, state, isuseractivated) { //custom code to run whenever a header is opened or closed
+                //do nothing
+            }
+        });
+
+    </script>
+
+}
+
+@RenderSection("scripts", required: false)

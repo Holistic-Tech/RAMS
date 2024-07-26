@@ -1,0 +1,48 @@
+﻿@model Rcsa.Web.Models.RiskMaster
+
+@{
+    
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    ViewBag.Title = "Details";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Risk Detail</h3>
+
+<div class="form1" style="text-align: left; margin-left: 20px">
+    <table id="hor-minimalist-b" style="margin: 7px 10px 62px -20px;" >
+    <tbody >
+        <tr>
+            <td>
+                <label>Risk Name</label>
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.RiskName)
+            </td>
+            
+        </tr>
+
+         <tr>
+            <td>
+               <label>Description</label>
+            </td>
+            <td>
+                  @Html.DisplayFor(model => model.Description)
+            </td>
+            
+        </tr>
+       
+
+</tbody></table>
+
+
+
+
+
+<div style="float:right;clear:both;margin-bottom:20px;margin-right:40px;">
+    <strong><u>@Html.ActionLink("Edit", "Edit", new { id = Model.RiskId, page = ViewBag.CurrentlyOnPage })</u></strong>&nbsp;|
+    <strong><u>@Html.ActionLink("Back to List", "RiskDetail", new {  page = ViewBag.CurrentlyOnPage }))</u></strong>
+     </div>
+
+    <div class="clear"></div>
+    
+</div>

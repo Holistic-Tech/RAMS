@@ -1,0 +1,28 @@
+﻿@model  Rcsa.Web.Models.ErrorModel
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Error</h2>
+<div>
+    Uh oh, it looks like something went wrong...    
+    <a href="/orm/" >Go back to Home page</a>
+</div>
+<div id="errorMessage">
+    @{
+        string message = null;
+        switch (Model.HttpStatusCode)
+        {
+            case 404:
+                message = "The requested content was not found";        
+                break;
+            case 500:
+                message = string.Concat("The following server error was encountered:<br /> ", Model.Exception.Message);
+                break;
+        }
+    }
+    
+    @Html.Raw(message)
+
+</div>

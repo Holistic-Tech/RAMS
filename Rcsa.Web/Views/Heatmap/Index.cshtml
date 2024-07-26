@@ -1,0 +1,183 @@
+﻿@model IEnumerable<Rcsa.Web.Models.RiskAssessmentMaster>
+
+@{
+    ViewBag.Title = "Heat Map Report";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    List<Rcsa.Web.Models.CompanyMaster> companyMaster = new List<Rcsa.Web.Models.CompanyMaster>();
+    Rcsa.Web.Models.RiskAssessmentMaster riskHeader = new Rcsa.Web.Models.RiskAssessmentMaster();
+    var details = db.RiskDetails.ToList();
+    int compId = ViewBag.CompId != null ? Convert.ToInt32(ViewBag.CompId) : 0;
+    int deptId = ViewBag.DeptId != null ? Convert.ToInt32(ViewBag.DeptId) : 0;
+    var UserDepartments = new List<int>();
+    if (User.IsInRole("Admin"))
+    {
+        companyMaster = db.CompaniesMaster.ToList();
+    }
+    if (User.IsInRole("Consultant"))
+    {
+        companyMaster = db.CompaniesMaster.ToList();
+        //var companyUsers = db.CompanyUsers.Where(x => x.CreatedBy == WebSecurity.CurrentUserId).ToList();
+        //if (companyUsers != null && companyUsers.Count > 0)
+        //{
+        //    foreach (var item in companyUsers)
+        //    {
+        //        var company = db.CompaniesMaster.FirstOrDefault(x => x.CompanyId == item.CompanyId);
+        //        companyMaster.Add(company);
+        //    }
+        //}
+    }
+    if (User.IsInRole("Manager") || User.IsInRole("User"))
+    {
+        UserDepartments = db.UserDepartments.Where(x => x.UserId == WebSecurity.CurrentUserId).Select(x => x.DepartmentId).ToList();
+        var companyUsers = db.CompanyUsers.Where(x => x.UserId == WebSecurity.CurrentUserId).ToList();
+        compId = companyUsers.FirstOrDefault().CompanyId;
+        if (companyUsers != null && companyUsers.Count > 0)
+        {
+            foreach (var item in companyUsers)
+            {
+                var company = db.CompaniesMaster.FirstOrDefault(x => x.CompanyId == item.CompanyId);
+                companyMaster.Add(company);
+            }
+        }
+    }
+
+}
+
+<script>
+    $(document).ready(function () {
+
+        $("#btnHeatMap").click(function () {
+            var comp = $('#ddlCompany option:selected').val();
+            var dept = $('#ddlDepartments option:selected').val();
+            window.location.href = '/HeatMap/Generate?CompanyId=' + comp + '&DepartmentId=' + dept;
+        });
+
+        $("#ddlCompany").change(function () {
+            var Param = { CompanyId: $('#ddlCompany option:selected').attr("value") };
+            $.getJSON("/CompanyUsersReport/DepartmentList/", Param, function (data) {
+                var items = "<option> -- All Departments -- </option>";
+                $.each(data, function (i, data) {
+                    items += "<option value=" + data.Value + ">" + data.Text + "</option>";
+                    $('#ddlDepartments').removeAttr("disabled");
+                });
+                $("#ddlDepartments").html(items);
+            });
+        });
+
+        var deptId = $('#ddlDepartments option:selected').val();
+        if (deptId != "") {
+            $('#searchBoxDivs').show();
+            // $('#gridData').show();
+        }
+        else {
+            $('#searchBoxDivs').hide();
+            //$('#gridData').hide();
+        }
+    });
+</script>
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center">Heat Map Report</h3>
+
+@using (Html.BeginForm())
+{    
+    <input type="hidden" id="hfCompId" name="hfCompId" value="0" />
+    <input type="hidden" id="hfDeptId" name="hfDeptId" value="0" />
+    <div style="width: 100%;">
+        <div id="divDepartment" class="divrows">
+            @if (User.IsInRole("Manager") || User.IsInRole("User"))
+            {
+                <div class="divpanel" style="display: none">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Company</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlCompany", new SelectList(@companyMaster, "CompanyId", "ComapnyName", @compId),
+                                "-- Select Company -- ", new { id = "ddlCompany", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Department</li>
+                            <li style="text-align: left;">
+                                @*@if (User.IsInRole("User"))
+                                {*@
+                                @Html.DropDownList("ddlDepartments", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId && UserDepartments.Contains(x.DepartmentId)).ToList(),
+                           "DepartmentId", "DepartmentName", @deptId), "-- All Departments -- ",
+                            new { id = "ddlDepartments", onchange = "loadgrid()", style = "width:240px;" })
+                                @*}
+                                 else
+                                 {
+                                     @Html.DropDownList("ddlDepartments", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId).ToList(),
+                                "DepartmentId", "DepartmentName", @deptId), "-- All Departments -- ",
+                                 new { id = "ddlDepartments", onchange = "loadgrid()", style = "width:240px;" })
+                                 }*@
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Company</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlCompany", new SelectList(@companyMaster, "CompanyId", "ComapnyName", @compId),
+                                "-- Select Company -- ", new { id = "ddlCompany", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Department</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlDepartments", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId).ToList(),
+                                    "DepartmentId", "DepartmentName", @deptId), "-- All Departments -- ",
+                                    new { id = "ddlDepartments", onchange = "loadgrid()", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+            <div class="divpanel">
+                <div align="left">
+                    <ul class="rlist">
+                        <li class="litem">&nbsp;</li>
+                        <li style="text-align: left;">
+                            <input type="button" id="btnHeatMap" value="Generate" class="button1" />
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+       
+    <div id="riskAlreadyinprogress" class="message error" style="display: none">
+        <h4>Sorry you can not add a risk. A risk with this department is already in progress!</h4>
+    </div>
+    <div class="divrows" id="RiskAssesmentDiv" style="display: none">
+        <div class="divpanel">
+            <div align="left">
+                <ul class="rlist">
+                    <li class="litem">Risk Assessment Name</li>
+                    <li style="text-align: left;">
+                        <input type="text" id="txtRiskAssesmentName" value="" name="txtRiskAssesmentName" placeholder="Risk Assessment Name"
+                            style="width: 238px; height: 24px; margin-bottom: 20px;" />
+                    </li>
+                </ul>
+            </div>
+            <span style="margin-left: -164px;">
+                <input type="submit" value="Save & Continue" id="btnSave" class="searchButton" style="width: 115px;" />
+                <input type="button" id="btnCancel" value="Cancel" class="searchButton" onclick="cancelRiskAssesment()" /></span>
+        </div>
+    </div>  
+             
+}
+<div style="height: 25px;"></div>

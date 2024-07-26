@@ -1,0 +1,92 @@
+﻿@using Rcsa.Web.Models
+@model Rcsa.Web.Models.MitigantMaster
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    ViewBag.Title = "Edit";
+    RcsaDb db = new RcsaDb();
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Edit Mitigants</h3>
+<div class="form1">
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        <fieldset>
+            @Html.HiddenFor(model => model.MitigantId)
+            <label>Risk</label>
+            @*@Html.DropDownListFor(m => m.SubRisksMaster.RisksMaster.RiskId, new SelectList(db.RiskMasters, "RiskId", "RiskName"), "--- Select Risk ---", new { id = "ddlRisk" })*@
+            @Html.DropDownList("ddlRisk", new SelectList(db.RiskMasters, "RiskId", "RiskName", Model.SubRisksMaster.RisksMaster.RiskId), "--- Select Risk ---", new { id = "ddlRisk", style = "width:348px;height:36px;" })
+            <div class="clear"></div>
+            <label>Sub Risk <span class="requiredFields">*</span></label>
+            @Html.DropDownListFor(m => m.SubRiskId, new SelectList(db.SubRisksMaster.Where(x => x.RiskId == Model.SubRisksMaster.RisksMaster.RiskId), "SubRiskId", "SubRiskName"), "---Select Sub Risk---", new { id = "ddlSubRisk", style = "width:348px;height:36px;" })
+            <div class="clear"></div>
+            @*<label>Mitigants</label>
+              @Html.DropDownListFor(m => m.SubRiskId, new SelectList("","MitigantId", "MitigantName",@ViewBag.MitigantSelected), new { id = "ddlMitigant",style="width:348px;height:36px;" })
+             <div class="clear"></div>*@
+            <label>Mitigant Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(model => model.MitigantName, new { @MaxLength = "100" })
+            <div class="clear"></div>
+            <label>Description</label>
+            @Html.TextAreaFor(model => model.MitigantDesc, new { @MaxLength = "3000" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <input type="hidden" value="@Request.QueryString["page"]" name="page" />
+            <button type="submit" value="Save" class="button1">Save</button>
+        </fieldset>
+    }
+</div>
+
+@section scripts
+{
+    <script type="text/ecmascript">
+        $(document).ready(function () {
+            //$("#ddlSubRisk").prop("disabled",true);
+            $('#ddlRisk').change(function () {
+                bindSubRisks();
+            });
+            $('#ddlSubRisk').change(function () {
+                bindMitigant();
+            });
+        });
+
+        function bindSubRisks() {
+            //$("#ddlSubRisk").prop("disabled", true);
+            if ($("#ddlRisk").val() == "") return;
+
+            var Param = { riskId: $("#ddlRisk").val() };
+
+            $.getJSON("/SubRisk/SubRisks", Param, function (data) {
+                //$("#ddlSubRisk").prop("disabled", data.length == 0);
+
+                var items = "<option>-- Select Sub Risk --</option>";
+                $.each(data, function (i, item) {
+                    items += "<option value='" + item.SubRiskId + "' detail='" + item.SubRiskDesc + "'>" + item.SubRiskName + "</option>";
+                });
+
+                $("#ddlSubRisk").html(items);
+            });
+        }
+        function bindMitigant() {
+            debugger;
+            //$("#ddlSubRisk").prop("disabled", true);
+            if ($("#ddlSubRisk").val() == "") return;
+
+            var Param = { SubRiskId: $("#ddlSubRisk").val() };
+
+            $.getJSON("/Mitigant/Mitigants", Param, function (data) {
+                //$("#ddlSubRisk").prop("disabled", data.length == 0);
+
+                var items = "";// "<option>-- Select Mitigant --</option>";
+                $.each(data, function (i, item) {
+                    items += "<option value='" + item.MitigantId + "' detail='" + item.MitigantName + "'>" + item.MitigantName + "</option>";
+                });
+
+                $("#ddlMitigant").html(items);
+            });
+        }
+    </script>
+}

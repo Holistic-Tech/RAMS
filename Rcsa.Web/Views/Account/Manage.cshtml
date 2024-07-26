@@ -1,0 +1,22 @@
+﻿@model Rcsa.Web.Models.LocalPasswordModel
+@{
+    
+    ViewBag.Title = "Change Password";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Change password</h3>
+
+@if (!String.IsNullOrWhiteSpace(@ViewBag.StatusMessage))
+{
+    <p class="success">@ViewBag.StatusMessage</p>
+}
+
+@if (ViewBag.HasLocalPassword)
+{
+    @Html.Partial("_ChangePasswordPartial")
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

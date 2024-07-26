@@ -1,0 +1,85 @@
+﻿@model IEnumerable<Rcsa.Web.Models.MitigantMaster>
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    ViewBag.Title = "MitigantDetails";
+}
+
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Manage Controls/Mitigants</h3>
+
+@using (Html.BeginForm())
+{    
+    <div class="searchBoxDiv">
+        <span style="float: left">
+            <input type="text" id="txtSearch" value="" name="keyword" placeholder="Search" style="width: 282px; margin-left: -23px;" />
+            <input type="submit" value="Search" id="btnSearch" class="searchButton" />
+            <input type="submit" value="Reset" id="btnReset" name="command" class="searchButton" />
+        </span>
+        <span style="float: right; margin-top: 6px; margin-right: 18px;"><strong><u>@Html.ActionLink("Add Mitigant", "Create")</u></strong></span>
+
+    </div>
+    <div style="height: 25px;"></div>            
+}
+<table class="minilist-b">
+    <tr>
+        <td>
+            <div id="dvGrid">
+                @if (Model != null)
+                {
+                    var gridTest = new WebGrid(Model, canPage: true, canSort: true, defaultSort: "MitigantName", rowsPerPage: 10, ajaxUpdateContainerId: "dvGrid");                    
+                    @gridTest.GetHtml(
+                tableStyle: "mGrid",
+                alternatingRowStyle: "mGrid-alternating-row",
+                          footerStyle: "pagination",
+                          mode: WebGridPagerModes.All,
+                          numericLinksCount: 10,
+                          firstText: "First",
+                          lastText: "Last",
+                          previousText: "Prev",
+                          nextText: "Next",
+                columns: new[] {                  
+                    gridTest.Column("MitigantName",header: "Mitigant" , style:"Wordwrap"),
+                    gridTest.Column("SubRiskId",header: "Sub Risk",format: (item) => (item.SubRisksMaster.SubRiskName == null ? "" :item.SubRisksMaster.SubRiskName ), style:"Wordwrap"),
+                    gridTest.Column("MitigantDesc",header: "Description", style:"Wordwrap"),                                        
+                    gridTest.Column("",header:"",style: "grdSrNo",
+                    format: @<text>
+                    <div>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.MitigantId, page = ViewBag.CurrentlyOnPage }) |
+                        @Html.ActionLink("Details", "Details", new { id = item.MitigantId, page = ViewBag.CurrentlyOnPage }) 
+
+                        @{
+                            if( !Rcsa.Web.Helpers.UsersHelper.isUserACompany() && !Rcsa.Web.Helpers.UsersHelper.isUserAManager())
+                            {
+                                @Html.Raw("|");
+                                @Html.ActionLink("Delete", "Delete", new { id = item.MitigantId, page = ViewBag.CurrentlyOnPage }, new { @class = "del" })
+          }
+                        }
+
+
+                    </div>
+                    </text>
+                    )
+                })
+                }
+            </div>
+            @if (@ViewBag.Mode == "Search" && Model.Count() == 0)
+            {
+                <div id="error" class="error" style="width: 747px;">No records found!!!</div>
+            }
+            <style>
+                .grdSrNo
+                {
+                    width: 18%;
+                    text-align: center;
+                }
+
+                .Wordwrap
+                {
+                    word-break: normal !important;
+                }
+            </style>
+        </td>
+    </tr>
+</table>
+

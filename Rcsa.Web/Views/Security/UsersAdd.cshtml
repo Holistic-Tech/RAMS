@@ -1,0 +1,85 @@
+﻿@using Rcsa.Web.ViewModel
+@model Rcsa.Web.Models.RegisterModel
+@{
+    ViewBag.Title = "UsersAdd";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Add User</h3>
+
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        <fieldset>
+
+            <label>User Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.UserName, new { placeholder = "User name", autofocus = "", @MaxLength = "15" })
+            <div class="clear"></div>
+            <div class="clear"></div>
+            <label>First Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.FirstName, new { placeholder = "First name", autofocus = "", @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Last Name <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.LastName, new { placeholder = "Last name", autofocus = "", @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Email <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.Email, new { placeholder = "Email", autofocus = "", autocomplete = "off", @MaxLength = "50" })
+            <div class="clear"></div>
+            <label>Roles</label>
+            @Html.DropDownList("dlRole", new SelectList(Roles.GetAllRoles().ToList()), "--- Select ---", new { id = "dlRole", style = "width:348px;height:36px;" })
+            <div class="clear"></div>
+            <div id="divCompany" style="display: none">
+                <label>Company</label>
+                @Html.DropDownList("dlCompany", new SelectList(CompanyViewModel.GetAllCompany(), "CompanyId", "ComapnyName"), "--- Select ---", new { id = "dlCompany", style = "width:348px;height:36px;" })
+                <div class="clear"></div>
+            </div>
+            <label>Password <span class="requiredFields">*</span></label>
+            @Html.PasswordFor(m => m.Password, new { placeholder = "Password", autofocus = "", @MaxLength = "12" })
+            <div class="clear"></div>
+            <label>Re-Password <span class="requiredFields">*</span></label>
+            @Html.PasswordFor(m => m.ConfirmPassword, new { placeholder = "Re Password", autofocus = "", @MaxLength = "12" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <div>
+                <button id="btnSave" value="Save" class="button2">Save</button>
+                &nbsp;&nbsp;
+            <button id="btnReset" value="Reset" type="reset" class="button2">Reset</button>
+            </div>
+        </fieldset>
+    }
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            $("#dlRole").change(function () {
+                showCompany($(this).val());
+            });
+
+            function showCompany(values) {
+                if (values == "User" || values == "Manager") {
+                    $("#divCompany").show();
+                } else {
+                    $("#divCompany").hide();
+                }
+            }
+
+            $("#btnSave").click(function () {
+                if ($("#dlRole option:selected").val() == "User" || $("#dlRole option:selected").val() == "Manager") {
+                    if ($("#dlCompany option:selected").val() == "" || $("#dlCompany option:selected").val() == undefined) {
+                        alert("You have not selected a Company for this User.");
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+        });
+
+        
+    </script>
+}

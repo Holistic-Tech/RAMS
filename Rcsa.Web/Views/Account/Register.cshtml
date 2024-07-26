@@ -1,0 +1,30 @@
+﻿@model Rcsa.Web.Models.RegisterModel
+@{
+    ViewBag.Title = "Register";
+}
+<div id="login">
+   
+    <h1>Sign up for ORM account</h1>
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary()
+
+        <fieldset id="inputs">
+            @Html.TextBoxFor(m => m.UserName, new {placeholder="User name", autofocus =""})
+            @Html.TextBoxFor(m => m.FirstName, new {placeholder="First name", autofocus =""})
+            @Html.TextBoxFor(m => m.LastName, new {placeholder="Last name", autofocus =""})
+            @Html.TextBoxFor(m => m.Email, new {placeholder="Email", autofocus =""})
+            @Html.PasswordFor(m => m.Password, new {placeholder="Password", autofocus =""})
+            @Html.PasswordFor(m => m.ConfirmPassword, new {placeholder="Re Password", autofocus =""})
+        </fieldset>
+        <fieldset id="actions">
+            <input type="submit" id="submit" value="Register" class="button1">
+            <a href="@Url.Action("Login","Account")">Log in</a>
+        </fieldset>
+        
+    }
+</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

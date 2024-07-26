@@ -1,0 +1,29 @@
+﻿@{
+    ViewBag.Title = "Report Issues";
+}
+
+@using (Html.BeginForm("ReportIssue", "Account", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    
+ 
+    <div id="login">
+        <p>
+            <img src="/images/logo.jpg" style="padding-top: 0px;width:160px;height:160px" /></p>
+        <h1>Report an issue</h1>
+        <fieldset id="inputs">            
+            <input id="Email" type="text" name="Email" value="@ViewData["Email"]" placeholder="Enter your email id" autofocus="" required="">
+            <input id="Subject" type="text" name="Subject" value="@ViewData["Subject"]" placeholder="Enter subject" autofocus="" required="">
+            <br />
+            <textarea id="Issue"  name="Issue" value="@ViewData["Issue"]" placeholder="Enter your issue" autofocus="" required="" style="width: 392px; height: 100px; border-radius: 5px;"></textarea>            
+            @Html.ValidationSummary(true)
+        </fieldset>
+
+        <fieldset id="actions">            
+            <input type="submit" id="submit" value="Submit" class="button1">
+            <a href="@Url.Action("Login", "Account")">Log in</a>
+        </fieldset>
+
+    </div>
+}
+

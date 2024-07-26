@@ -1,0 +1,39 @@
+﻿@using Rcsa.Web.Models
+@model IList<Rcsa.Web.Models.DepartmentMaster>
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    RcsaDb db = new RcsaDb();
+    ViewBag.Title = "DepartmentDetails";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">Departments</h3>
+
+<table id="hor-minimalist-b">
+    <tr>
+        <th scope="col">Department</th>
+        <th>Contact Name</th>
+        <th>Phone</th>
+        <th align="right">
+            <strong><u>@Html.ActionLink("Add Department", "Create")</u></strong>
+        </th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DepartmentName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompaniesMasters.ContactName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompaniesMasters.Phone)
+            </td>
+            <td align="right">
+                @Html.ActionLink("Edit", "Edit", new { id = item.DepartmentId }) @*|
+                @Html.ActionLink("Delete", "Delete", new { id = item.DepartmentId })*@
+            </td>
+        </tr>
+    }
+</table>

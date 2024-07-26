@@ -1,0 +1,96 @@
+﻿@using Rcsa.Web.ViewModel
+@model Rcsa.Web.Models.UserProfile
+@{
+    ViewBag.Title = "UserEdit";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+
+    var role = Roles.GetRolesForUser(Model.UserName);
+    var userRole = role.Length > 0 ? role[0] : "";
+    var userCompany = CompanyViewModel.GetBydUserId(Model.UserId);
+
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Edit User </h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+
+        @Html.HiddenFor(x => x.UserId)
+        <fieldset>
+            <label>Active</label>
+            <input type="checkbox" name="isActive" @((Model.IsActive.HasValue && Model.IsActive.Value == true)  ? "checked" : "")  /> 
+            <div class="clear"></div>
+            <label>User Name</label>
+            @Html.HiddenFor(x => x.UserName)
+            @Html.TextBoxFor(m => m.UserName, new { disabled = "disabled" })
+            <div class="clear"></div>
+            <label>First Name</label>
+            @Html.TextBoxFor(m => m.FirstName, new { @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Last Name</label>
+            @Html.TextBoxFor(m => m.LastName, new { @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Email</label>
+            @Html.TextBoxFor(m => m.Email, new { @MaxLength = "30" })
+            <div class="clear"></div>
+            <label>Roles</label>
+            @Html.DropDownList("Role", new SelectList(Roles.GetAllRoles().ToList(), userRole), "--- Select ---", new { id = "dlRole",style="width:348px;height:36px;" })
+            <div class="clear"></div>
+            <div id="divCompany" style="display: none">
+                <label>Company</label>
+                @Html.DropDownList("dlCompany", new SelectList(CompanyViewModel.GetAllCompany(), "CompanyId", "ComapnyName", userCompany.CompanyId), "--- Select ---", new { id = "dlCompany" ,style="width:348px;height:36px;"})
+                <div class="clear"></div>
+            </div>
+            <br />
+            <div>
+                <label>&nbsp;</label>
+            <button id="btnSave" value="Save" class="button1">Save</button>
+            &nbsp;&nbsp;
+            <button id="btnReset" value="Reset" type="reset" class="button1">Reset</button>
+            </div>
+            
+        </fieldset>
+        <div class="clear"></div>
+        if (ViewBag.Status != null)
+        {
+        <div class="success">
+            @ViewBag.Status
+        </div>
+        }
+    }
+</div>
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            $(function () {
+                showCompany($("#dlRole").val());
+            });
+
+            $("#dlRole").change(function () {
+                showCompany($(this).val());
+            });
+
+            function showCompany(values) {
+                if (values == "User" || values == "Manager") {
+                    $("#divCompany").show();
+                } else {
+                    $("#divCompany").hide();
+                }
+            }
+
+            $("#btnSave").click(function () {
+                if ($("#dlRole option:selected").val() == "User" || $("#dlRole option:selected").val() == "Manager") {
+                    if ($("#dlCompany option:selected").val() == "" || $("#dlCompany option:selected").val() == undefined) {
+                        alert("You have not selected a Company for this User. Please Select A User for this Company.");
+                        return false;
+                    }
+                }
+                return true;
+            });
+        });
+    </script>
+}

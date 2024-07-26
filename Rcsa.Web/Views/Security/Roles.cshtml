@@ -1,0 +1,27 @@
+﻿@{
+    ViewBag.Title = "Roles";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Roles</h3>
+<table id="hor-minimalist-b" >
+    <thead>
+    	<tr>
+        	<th scope="col">Role Id</th>
+	        <th scope="col">Role Name</th>
+	        <th scope="col">&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int i = 0;}
+        @foreach (var item in Roles.GetAllRoles())
+        {
+            i++;
+            <tr>
+                <td>@i</td>
+                <td>@item</td>
+                <td>@*<a href="#">Edit</a> | <a href="#">Delete</a>*@</td>
+            </tr>
+        }
+    </tbody>
+</table>

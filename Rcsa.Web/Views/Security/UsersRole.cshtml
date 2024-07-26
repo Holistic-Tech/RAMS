@@ -1,0 +1,169 @@
+﻿@using Rcsa.Web.Models
+@model IList<Rcsa.Web.Models.UserProfile>
+@{
+    var _entities = new Rcsa.Web.Models.RcsaDb();
+    RcsaDb db = new RcsaDb();
+    ViewBag.Title = "UsersRole";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    string[] users = Roles.GetUsersInRole("Company");
+    //var role = Roles.GetAllRoles().ToList();
+
+    string role = System.Web.Security.Roles.GetRolesForUser().Single();
+    var selectedUser = Roles.GetUsersInRole(role);
+}
+
+<script type="text/javascript">
+    function ConfirmEdit(user, role) {
+        ClearControls();
+        document.getElementById('hfNewEdit').value = 1;
+        document.getElementById('ddlUser').value = user;
+        document.getElementById('ddlRole').value = role;
+        $('#dvRoleAssign').slideDown('slow');
+        document.getElementById('btnNew').style.display = 'none';
+        return false;
+    }
+    function showNew() {
+        ClearControls();
+        $('#dvRoleAssign').slideDown('slow');
+        document.getElementById('btnNew').style.display = 'none';
+        return false;
+    }
+    function Reset() {
+        $('#dvRoleAssign').slideUp('slow');
+        document.getElementById('btnNew').style.display = '';
+        ClearControls();
+        return false;
+    }
+    function ClearControls() {
+        document.getElementById('ddlUser').value = "";
+        document.getElementById('ddlRole').value = "";
+        document.getElementById('hfNewEdit').value = 0;
+        //document.getElementById('txtDepartment').value = "";
+        //document.getElementById('lblMsg').innerHTML = "";
+        //document.getElementById('lblErrorMsg').innerHTML = "";
+        return false;
+    }
+</script>
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Users Role</h3>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <input type="hidden" runat="server" value="0" id="hfNewEdit" name="hfNewEdit" />
+    <div id="dvRoleAssign" style="display: none;">
+        <table width="60%">
+            <tr>
+                <td><strong>User</strong></td>
+                <td>
+                    @Html.DropDownList("ddlUser", new SelectList(db.UserProfiles.Where(x=> x.UserName.ToLower() != "admin"), "UserId", "UserName"), "---Select---", new { id = "ddlUser", style = "width: 150px;" })
+                    @*@Html.DropDownList("ddlUser", new SelectList(Roles.GetUsersInRole(role), "", ""), "---Select---", new { id = "ddlUser", style = "width: 150px;" })*@
+                </td>
+                <td><strong>Role</strong></td>
+                <td>@Html.DropDownList("ddlRole", new SelectList(Roles.GetAllRoles().Where(x => x != "Admin")), "---Select---", new { id = "ddlRole", style = "width: 150px;" })</td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;
+                </td>
+                <td align="left">
+                    <button id="btnSave" value="Save" class="button2">Save</button>
+                    <button id="btnReset" value="Reset" class="button2" onclick="javascript:return Reset();">Reset</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table id="hor-minimalist-b">
+        <thead>
+            <tr>
+                <th scope="col">User Name</th>
+                <th scope="col">Name</th>
+                <th scope="col">Role Name</th>
+                @*<th scope="col">&nbsp;</th>*@
+                <th scope="col" style="width: 110px;"><strong><u>@Html.ActionLink("Add User Role", "", "", new { onclick = "return showNew();", id = "btnNew" })</u></strong></th>
+            </tr>
+        </thead>
+        @if (Model != null && Model.Count > 0)
+        {
+
+            @*foreach (var item in selectedUser)
+            {
+                string[] roles = Roles.GetRolesForUser(@item);
+                if (roles.Length > 0 && item != "admin")
+                {
+            <tr>
+                <td>
+                    @item
+                </td>
+                <td>
+                </td>
+                <td>
+                    @roles[0].ToString()
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "", "", new { onclick = "return ConfirmEdit('" + item + "','" + roles[0].ToString() + "');" })
+                </td>
+            </tr>
+                }
+            }*@
+
+
+            foreach (var item in Model)
+            {
+                string[] roles = Roles.GetRolesForUser(@item.UserName);
+                if (roles.Length > 0 && item.UserName != "admin")
+                {
+            <tr>
+                <td>
+                    @item.UserName
+                </td>
+                <td>
+                    @item.FirstName  @item.LastName
+                </td>
+                <td>
+                    @roles[0].ToString()
+                </td>
+                @*<td>
+                    @item.Email
+                </td>*@
+                <td>
+                    @Html.ActionLink("Edit", "", "", new { onclick = "return ConfirmEdit('" + item.UserId + "','" + roles[0].ToString() + "');" })
+                </td>
+            </tr>
+                }
+            }
+        }
+    </table>
+    
+    <div class="clear"></div>
+        if (ViewBag.Status != null)
+        {
+    <div class="success">
+        @ViewBag.Status
+    </div>
+        }
+}
+@*@using (Html.BeginForm("UsersRole", "Security", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <fieldset>
+            <label>User Name</label>
+             @Html.DropDownListFor(m => m.UserName, new SelectList(_entities.UserProfiles.ToList(), "UserId", "UserName"), "---Select---", new { id = "UserId"})                             
+            <div class="clear"></div>
+            <div class="userRoles">
+                <span>
+                    <fieldset>
+                        @Html.CheckBoxFor(m => m.IsPaid)
+                        <label>Paid</label>
+                        @Html.CheckBoxFor(m => m.IsApproved)
+                        <label>Approvals</label>
+                        @Html.CheckBoxFor(m => m.IsApproved)
+                        <label>Consultant</label>
+                    </fieldset>
+                </span>
+            </div>
+            <br />
+            <label>&nbsp;</label>
+            <button id="btnSave" value="Save" class="button1">Save</button>
+            &nbsp;&nbsp;
+            <button id="btnReset" value="Reset" type="reset" class="button1">Reset</button>
+        </fieldset>
+        <div class="clear"></div>
+}*@

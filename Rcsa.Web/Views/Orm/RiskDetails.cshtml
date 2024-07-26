@@ -1,0 +1,277 @@
+﻿@model List<Rcsa.Web.Models.RiskDetailsModel>
+@{
+    ViewBag.Title = "RiskManagement";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    int compId = Convert.ToInt32(ViewBag.compId) != 0 ? Convert.ToInt32(ViewBag.compId) : 0;
+    int deptId = Convert.ToInt32(ViewBag.deptId) != 0 ? Convert.ToInt32(ViewBag.deptId) : 0;
+    var userProfiles = db.UserProfiles.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+    int riskAssesmentId = Convert.ToInt32(ViewBag.RiskAssesmentId) != 0 ? Convert.ToInt32(ViewBag.RiskAssesmentId) : 0;
+    var riskDetails = db.RiskAssessmentMaster.Where(x => x.RiskAssessmentId == riskAssesmentId).SingleOrDefault();
+    // int lastUpdateId = Convert.ToInt32(ViewBag.lastId) != 0 ? Convert.ToInt32(ViewBag.lastId) : 0;
+    // int value  =Url.RequestContext.HttpContext.Request.QueryString.AllKeys.Contains("ReturnUrl");
+    string value = Request.QueryString["editId"];
+    bool isFirst = true;
+}
+
+<script type="text/javascript">
+
+</script>
+
+<style>
+    select {
+        width: 100px;
+    }
+
+    textarea, input[type=text] {
+        width: 100px;
+        border-radius: 5px;
+        box-shadow: 0px 0px;
+        border: 1px solid silver;
+        padding: 2px 5px;
+        margin-bottom: 5px;
+    }
+
+    input[type=text] {
+        height: 30px;
+    }
+
+    textarea {
+        height: 60px;
+    }
+
+    .highlight {
+        background-color: lightblue !important;
+    }
+</style>
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 15px; text-align: center;">Conduct Risk Assessment</h3>
+
+@using (Html.BeginForm())
+{
+    //var value = Url.RequestContext.HttpContext.Request.QueryString["editId"];
+    <input type="hidden" id="hfCompId" name="hfCompId" value="@compId" />
+    <input type="hidden" id="hfDeptId" name="hfDeptId" value="@deptId" />
+    <input type="hidden" id="hfRiskAssesmentId" name="hfRiskAssesmentId" value="@riskAssesmentId" />
+    <input type="hidden" id="hfRiskId" name="hfRiskId" value="0" />
+    <input type="hidden" id="hfSubRiskId" name="hfSubRiskId" value="0" />
+    <input type="hidden" id="hfMitigantId" name="hfMitigantId" value="0" />
+    <input type="hidden" id="gfvalue" name="hfname" value="@value" />
+
+    @Html.ValidationSummary()
+
+
+    <table id="hor-minimalist-b">
+        <tr>
+            <td>
+                <strong>Company Name:</strong>
+            </td>
+            <td>
+                @ViewBag.companyName
+            </td>
+            <td>
+                <strong>Department Name:</strong>
+
+            </td>
+            <td align="left">
+                @ViewBag.departmentName
+            </td>
+        </tr>
+    </table>
+
+
+        <div class="searchBoxDiv" style="width: 98%;">
+            @if (riskDetails != null)
+            {
+                if (riskDetails.Status != "C")
+                {
+                    <span style="float: right; margin-top: 6px;">
+                        Click plus sign to add a Risk Assessment Line item &nbsp;
+                        <a href="@Url.Action("RiskAssesmentsManagement", "Orm", new { id = "0", rid = @riskAssesmentId, compId = @compId, deptId = @deptId })">
+                            <img src="/Images/add2.png" />
+                        </a>
+                        @*<a href="Url.Action("RiskAssesmentsManagement", new { id = "0", rid = @riskAssesmentId, compId = @compId, deptId = @deptId })"> <img src="../../Images/add2.png" /></a>*@
+                        @*@Html.ActionLink("Add New", "RiskAssesmentsManagement", new { id = "0", rid = @riskAssesmentId, compId = @compId, deptId = @deptId })*@
+                    </span>
+                }
+            }
+        </div>
+        <div class="clear"></div>
+        <table class="minilist-b">
+            <tr>
+                <td>
+                    <div id="dvGrid">
+                        @if (Model != null)
+                        {
+                            var gridTest = new WebGrid(Model, canPage: true, canSort: true, defaultSort: "RiskID", rowsPerPage: 10, ajaxUpdateContainerId: "dvGrid");
+                            @gridTest.GetHtml(
+                tableStyle: "mGrid",
+                alternatingRowStyle: "mGrid-alternating-row",
+                          footerStyle: "pagination",
+                          mode: WebGridPagerModes.All,
+                          numericLinksCount: 10,
+                          firstText: "First",
+                          lastText: "Last",
+                          previousText: "Prev",
+                          nextText: "Next",
+                columns: new[] {
+                    gridTest.Column("RiskID",header: "Risk",format: (item) =>(item.RiskMaster.RiskName) , style:"Wordwrap"),
+                    gridTest.Column("SubRiskID",header: "Sub Risk",format: (item) =>(item.SubRiskMaster.SubRiskName), style:"Wordwrap"),
+                    gridTest.Column("MitigantID",header: "Mitigant", format: (item) =>(item.MitigantMaster.MitigantName), style:"Wordwrap"),
+                    gridTest.Column("",header:"",style: "grdSrNo",
+                    format: @<text>
+                        <div>
+                            <input type="hidden" value="@item.RiskDetailID" />
+                            @if (!User.IsInRole("Manager") || User.IsInRole("User"))
+                        {
+                            if ((item.Status + "") == "P")
+                            {
+                                    @Html.ActionLink("Edit", "RiskAssesmentsManagement", new { id=item.RiskDetailID, page = ViewBag.CurrentlyOnPage, rid = @riskAssesmentId, compId = @compId, deptId = @deptId })
+                                    <span>|</span>
+                            }
+                                 if (@ViewBag.ViewType != "completed")
+                             {
+                                    @Html.ActionLink("View", "RiskAssesmentsManagementDetail", new { id=item.RiskDetailID, page=ViewBag.CurrentlyOnPage, rid = @riskAssesmentId,
+                                   compId = @compId, deptId = @deptId })
+                            }
+                            else
+                            {
+                                    @Html.ActionLink("View", "RiskAssesmentsManagementDetail", new { id=item.RiskDetailID,rid = @riskAssesmentId, page = ViewBag.CurrentlyOnPage,
+                                   compId = @compId, deptId = @deptId , view="completed" })
+                                }
+                        }
+                        else
+                        {
+                            if ((item.Status + "") == "P")
+                            {
+                                    @Html.ActionLink("Edit", "RiskAssesmentsManagement", new { id=item.RiskDetailID, page = ViewBag.CurrentlyOnPage, rid = @riskAssesmentId, compId = @compId, deptId = @deptId })
+                                    <span>|</span>
+                            }
+                                if (@ViewBag.ViewType != "completed")
+                             {
+                                    @Html.ActionLink("View", "RiskManagementDetail", new { id=item.RiskDetailID,rid = @riskAssesmentId, page = ViewBag.CurrentlyOnPage,
+                                   compId = @compId, deptId = @deptId })
+                            }
+                            else
+                            {
+                                    @Html.ActionLink("View", "RiskManagementDetail", new { id=item.RiskDetailID,rid = @riskAssesmentId, page = ViewBag.CurrentlyOnPage,
+                                   compId = @compId, deptId = @deptId , view="completed" })
+                                }
+                            }
+
+                            @if (isFirst && item.Status == "C")
+                            {
+                                isFirst =false;
+                                <span>&nbsp;| <a href="javascript:;" onclick="markInProgress(@item.RiskDetailID, @ViewBag.CurrentlyOnPage)">Mark In-Progress</a></span>
+                            }
+                            @{
+                            if( !Rcsa.Web.Helpers.UsersHelper.isUserACompany() && !Rcsa.Web.Helpers.UsersHelper.isUserAManager())
+                            {
+                                    @Html.Raw("|");
+                                    @Html.ActionLink("Delete", "DeleteRiskAssement", new { id=item.RiskDetailID,rid = @riskAssesmentId,
+                                   compId = @compId, deptId = @deptId, page = ViewBag.CurrentlyOnPage }, new { @class = "del" })
+
+          }
+                            }
+                        </div>
+                    </text>
+                    )
+                })
+                                }
+                    </div>
+                    <style>
+                        .grdSrNo {
+                            width: 25%;
+                            text-align: center;
+                        }
+
+                        .Wordwrap {
+                            word-break: normal !important;
+                        }
+                    </style>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div style="padding-right: 5px; padding-top: 15px; width: 100%;">
+                        @if (Model != null && Model.Count > 0)
+                        {
+                            if (riskDetails != null)
+                            {
+                                if (riskDetails.Status != "C")
+                                {
+                                    if (
+                                            !User.IsInRole("User") &&
+                                            (
+                                                User.IsInRole("Manager") || userProfiles.IsCompanySupervisor == true ||
+                                                (userProfiles.IsCompanyStaff == null && userProfiles.IsCompanySupervisor == null)
+                                            )
+                                        )
+                                    {
+                                        <input type="submit" id="btnSaveComplete" value="Save and Approve" name="command" class="button2" style="width: 150px">
+                                    }
+                                     @*if ((userProfiles.IsCompanySupervisor == true || User.IsInRole("Manager")) && !User.IsInRole("User"))
+                                    {
+                                        <input type="submit" id="btnSaveComplete" value="Save and Approve" name="command" class="button2" style="width: 150px">
+                                    }
+                                    if (((userProfiles.IsCompanyStaff == null && userProfiles.IsCompanySupervisor == null) || User.IsInRole("Manager")) && !User.IsInRole("User"))
+                                    {
+                                        <input type="submit" id="btnSaveComplete" value="Save and Approve" name="command" class="button2" style="width: 150px">
+                                    }*@
+                                }
+                            }
+                        }
+
+                        @if (ViewBag.ViewType != "completed")
+                        {
+                            <div style="float: right; clear: both; margin-bottom: 20px; margin-right: 40px;"><strong><u>@Html.ActionLink("Return to List", "DepartmentRisks", new { cId = @compId, dId = @deptId })</u></strong></div>
+                        }
+                        else
+                        {
+                            <div style="float: right; clear: both; margin-bottom: 20px; margin-right: 40px;"><strong><u>@Html.ActionLink("Return to List", "ViewRisks", new { cId = @compId, dId = @deptId })</u></strong></div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+                                }
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+            debugger;
+            var value = $('#gfvalue').val();
+            // alert(value);
+
+            jQuery(".mGrid tbody tr").each(function () {
+                debugger;
+                var get_id = jQuery(this).find('input[type=hidden]').val();
+                if (get_id == value) {
+                    $(this).addClass("highlight");
+                }
+                else {
+                    $(this).removeClass("highlight");
+                }
+            });
+
+        });
+
+        function markInProgress(riskDetailId, page) {
+            $.ajax({
+                url: '/Orm/MarkInProgress',
+                data: JSON.stringify({ riskDetailId: riskDetailId}),
+                type: 'POST',
+                contentType: 'application/json;',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    alert("Assessment changed to In-Progress successfully.");
+                    window.location.href = '/Orm/RiskDetails/' + $("#hfRiskAssesmentId").val() + '?compId=' + $("#hfCompId").val() + '&deptId=' + $("#hfDeptId").val() + '&page=' + page;
+                }
+            });
+        }
+    </script>
+}

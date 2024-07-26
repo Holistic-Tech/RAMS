@@ -1,0 +1,39 @@
+﻿@using Rcsa.Web.Models
+@model Rcsa.Web.Models.DepartmentMaster
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    RcsaDb db = new RcsaDb();
+    int currentUserId = WebSecurity.CurrentUserId;
+    var user = db.CompanyUsers.FirstOrDefault(x => x.UserId == currentUserId);
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">Edit Department</h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(model => model.DepartmentId)<br />
+        <fieldset>
+            <label>Company</label>
+            @*@Html.DropDownListFor(m => m.CompanyId, new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName"), "---Select---", new { id = "ddlCompany" })*@
+            @if (User.IsInRole("Manager") || User.IsInRole("User"))
+            {
+                @Html.DropDownListFor(m => m.CompanyId, new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName"), "---Select---", new { id = "ddlCompany", disabled = "disabled" })
+                @Html.HiddenFor(m => m.CompanyId, new { @Value = Model.CompanyId})
+            }
+            else
+            {
+                @Html.DropDownListFor(m => m.CompanyId, new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName"), "---Select---", new { id = "ddlCompany" })
+            }
+            <div class="clear"></div>
+            <label>Department Name</label>
+            @Html.TextBoxFor(model => model.DepartmentName, new {@MaxLength="50" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <button type="submit" value="Save" class="button1">Save</button>
+        </fieldset>
+    }
+</div>
