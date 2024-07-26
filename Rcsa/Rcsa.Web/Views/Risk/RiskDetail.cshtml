@@ -1,0 +1,76 @@
+﻿@model IEnumerable<Rcsa.Web.Models.RiskMaster>
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    ViewBag.Title = "RiskDetail";
+}
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center">Risks</h3>
+
+@using (Html.BeginForm())
+{    
+    <div class="searchBoxDiv">
+        <span style="float: left">
+            <input type="text" id="txtSearch" value="" name="keyword" placeholder="Search" style="width: 282px; margin-left: -23px;" />
+            <input type="submit" value="Search" id="btnSearch" class="searchButton" />
+            <input type="submit" value="Reset" id="btnReset" name="command" class="searchButton" />
+        </span>
+        <span style="float: right; margin-top: 6px; margin-right: 18px;"><strong><u>@Html.ActionLink("Add Risk", "Create")</u></strong></span>
+    </div>
+    <div style="height: 25px;"></div>                
+}
+<table class="minilist-b">
+    <tr>
+        <td>
+            <div id="dvGrid">
+                @if (Model != null)
+                {
+                    var gridTest = new WebGrid(Model, canPage: true, canSort: true, defaultSort: "RiskName", rowsPerPage: 10, ajaxUpdateContainerId: "dvGrid");                    
+                    @gridTest.GetHtml(
+                tableStyle: "mGrid",
+                alternatingRowStyle: "mGrid-alternating-row",
+                          footerStyle: "pagination",
+                          mode: WebGridPagerModes.All,
+                          numericLinksCount: 10,
+                          firstText: "First",
+                          lastText: "Last",
+                          previousText: "Prev",
+                          nextText: "Next",
+                columns: new[] {                  
+                    gridTest.Column("RiskName",header: "Risk",style:"width-box Wordwrap"),                 
+                    gridTest.Column("Description",header: "Description",style:"Wordwrap"),                                        
+                    gridTest.Column("",header:"",style: "grdSrNo",
+                    format: @<text>
+                    <div>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.RiskId }) |
+                         @Html.ActionLink("Details", "Details", new { id = item.RiskId })
+                    </div>
+                    </text>
+                    )
+                })
+                }
+            </div>
+            @if (@ViewBag.Mode == "Search" && Model.Count() == 0)
+            {
+                <div id="error" class="error" style="width: 747px;">No records found!!!</div>
+            }
+            <style>
+                .grdSrNo
+                {
+                    width: 18%;
+                    text-align: center;
+                }
+
+                .wdth
+                {
+                    width: 8%;
+                }
+
+                .Wordwrap
+                {
+                    word-break: normal !important;
+                }
+            </style>
+        </td>
+    </tr>
+</table>

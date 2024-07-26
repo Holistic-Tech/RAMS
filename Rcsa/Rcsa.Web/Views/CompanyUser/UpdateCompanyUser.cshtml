@@ -1,0 +1,55 @@
+﻿@using Rcsa.Web.ViewModel
+@model Rcsa.Web.Models.UserProfile
+@{
+    ViewBag.Title = "UsersAdd";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var role = Roles.GetRolesForUser(Model.UserName);
+    var userRole = role.Length > 0 ? role[0] : "";
+    var userCompany = CompanyViewModel.GetBydUserId(Model.UserId);
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center">Update Company User</h3>
+
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary()
+        @Html.HiddenFor(x => x.UserId)
+        <fieldset>
+            <label>User Name</label>
+            @Html.HiddenFor(x => x.UserName)
+            @Html.TextBoxFor(m => m.UserName, new { disabled = "disabled" })
+            <div class="clear"></div>
+            <label>First Name  <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.FirstName, new { @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Last Name  <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.LastName, new { @MaxLength = "20" })
+            <div class="clear"></div>
+            <label>Email  <span class="requiredFields">*</span></label>
+            @Html.TextBoxFor(m => m.Email, new { @MaxLength = "30" })
+            <div class="clear"></div>
+            <label>Company</label>
+            @Html.DropDownList("dlCompany", new SelectList(CompanyViewModel.GetAllCompany(), "CompanyId", "ComapnyName", userCompany.CompanyId), "--- Select ---", new { id = "dlCompany", style = "width:348px; height:36px;" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <div>
+                <button id="btnSave" value="Save" class="button2">Save</button>
+
+                <button id="btnReset" value="Reset" type="reset" class="button2">Reset</button>
+            </div>
+        </fieldset>
+        <div class="clear"></div>
+        if (ViewBag.Status != null)
+        {
+        <div class="success">
+            @ViewBag.Status
+        </div>
+        }
+    }
+</div>
+@section scripts
+{
+}

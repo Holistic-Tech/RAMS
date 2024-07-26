@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title - Risk Assessment and Management Systems (RAMS)</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <meta name="viewport" content="width=device-width" />
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+</head>
+<body>
+    <center>
+            <!-- HEADER START HERE-->
+            <header>
+                  &nbsp;
+            </header>
+            <!-- HEADER ENDS HERE-->
+            <div id="wraper">
+                @RenderBody()
+            </div>
+        <div class="clear">&nbsp;</div>
+        <div style="margin-top:20px;">
+            <!-- Footer start here-->
+            <footer >© 2013 Risk Assessment and Management System (RAMS). All rights reserved.</footer>
+            <!-- Footer Ends here-->
+        </div>
+            
+    </center>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

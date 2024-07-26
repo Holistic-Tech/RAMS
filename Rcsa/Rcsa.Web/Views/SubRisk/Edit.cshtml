@@ -1,0 +1,40 @@
+﻿@using Rcsa.Web.Models
+@model SubRiskMaster
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new RcsaDb();
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Edit Sub Risk </h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary()
+        <fieldset>
+            @Html.HiddenFor(model => model.SubRiskId)
+            <div class="clear"></div>
+            <label>Risk <span class="requiredFields">*</span> </label>
+            @Html.DropDownListFor(m => m.RiskId, new SelectList(db.RiskMasters, "RiskId", "RiskName"), "---Select---", new { id = "ddlRisk", style = "width:348px;height:36px;" })
+            <div class="clear"></div>
+            <label>Sub Risk Name <span class="requiredFields">*</span></label>
+            @Html.EditorFor(model => model.SubRiskName)
+            <div class="clear"></div>
+            <label>Description </label>
+            @Html.TextAreaFor(model => model.SubRiskDesc)
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <button value="Save" class="button1">Save</button>
+        </fieldset>
+    }
+
+</div>
+@if (!String.IsNullOrWhiteSpace(ViewBag.Error))
+        {
+         <div class="error">
+            @ViewBag.Error
+        </div>   
+        }

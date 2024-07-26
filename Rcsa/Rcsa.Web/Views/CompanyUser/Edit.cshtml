@@ -1,0 +1,117 @@
+﻿@model Rcsa.Web.Models.CompanyUser
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    int userId = Convert.ToInt32(ViewBag.CurrentUserId);
+    var userProfiles = db.UserProfiles.FirstOrDefault(x => x.UserId == userId);
+    string uType = (userProfiles.IsCompanyStaff ?? false) ? "Staff" : ((userProfiles.IsCompanySupervisor ?? false) ? "Supervisor" : "Select");  
+}
+<script>
+    function dlValue() {
+        var dlValue = $('#companyUserType option:selected').val();
+        $('#hfuType').val(dlValue);
+    }    
+    $(document).ready(function () {        
+        //$('#companyUserType option:selected').val($('#hfType').val());
+        $('#companyUserType').val('@uType');
+    });
+</script>
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">Edit Company User</h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        <input type="hidden" id="hfuType" name="hfuType" value="" />
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        @Html.HiddenFor(x => x.UsersProfile.UserId)
+        <fieldset>
+            <label>User Type</label>
+            <select id="companyUserType" name="companyUserType" style="height:36px;width:348px;" onchange="dlValue();">
+               @* <option value="" >-- Select --</option>*@
+                <option value="Staff">Staff</option>
+                <option value="Supervisor">Supervisor</option>
+            </select>
+            <div class="clear"></div>
+            <label>User Name</label>
+            @Html.TextBoxFor(m => m.UsersProfile.UserName, new { @readonly = "readonly" })
+            <div class="clear"></div>
+            <label>First Name</label>
+            @Html.TextBoxFor(m => m.UsersProfile.FirstName, new { @MaxLength = "50" })<br />
+            @Html.ValidationMessageFor(m => m.UsersProfile.FirstName)
+            <div class="clear"></div>
+            <label>Last Name</label>
+            @Html.TextBoxFor(m => m.UsersProfile.LastName, new { @MaxLength = "50" })
+            <div class="clear"></div>
+            <label>Email </label>
+            @Html.TextBoxFor(m => m.UsersProfile.Email, new { @MaxLength = "30" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <button id="btnSave" value="Save" class="button1">Save</button>
+            &nbsp;&nbsp;
+            <button id="btnReset" value="Reset" type="reset" class="button1">Reset</button>
+        </fieldset>
+        <div class="clear"></div>
+        if (ViewBag.Status != null)
+        {
+        <div class="success">
+            @ViewBag.Status
+        </div>
+        }
+    }
+</div>
+@*<h2>Edit</h2>
+
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend>CompanyUser</legend>
+
+        @Html.HiddenFor(model => model.CompanyUserId)
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.UserId)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UserId)
+            @Html.ValidationMessageFor(model => model.UserId)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.CompanyId)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.CompanyId)
+            @Html.ValidationMessageFor(model => model.CompanyId)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.UpdatedBy)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UpdatedBy)
+            @Html.ValidationMessageFor(model => model.UpdatedBy)
+        </div>
+
+        <div class="editor-label">
+            @Html.LabelFor(model => model.UpdatedOn)
+        </div>
+        <div class="editor-field">
+            @Html.EditorFor(model => model.UpdatedOn)
+            @Html.ValidationMessageFor(model => model.UpdatedOn)
+        </div>
+
+        <p>
+            <input type="submit" value="Save" />
+        </p>
+    </fieldset>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>*@
+

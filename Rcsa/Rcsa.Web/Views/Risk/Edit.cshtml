@@ -1,0 +1,36 @@
+﻿@model Rcsa.Web.Models.RiskMaster
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    ViewBag.Title = "Edit";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Edit Risk</h3>
+<div class="form1">
+    @using (Html.BeginForm("Edit", "Risk", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+    
+        <fieldset>
+            <label>Risk Name</label>
+            @Html.TextBoxFor(model => model.RiskName, new { @MaxLength = "200" })
+            <div class="clear"></div>
+            <label>Description</label>
+            @Html.TextAreaFor(model => model.Description, new { @MaxLength = "2000" })
+            <div class="clear"></div>
+            <br />
+            <label>&nbsp;</label>
+            <button type="submit" value="Save" class="button1">Save</button>
+            <button type="submit" value="Delete" class="button1" name="delete">Delete</button>
+            <div class="clear"></div>
+            <br />
+        </fieldset>
+    }
+</div>
+@if (!String.IsNullOrWhiteSpace(ViewBag.Error))
+{
+    <div class="error">
+        @ViewBag.Error
+    </div>   
+}

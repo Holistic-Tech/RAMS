@@ -1,0 +1,115 @@
+﻿@using Rcsa.Web.Models
+@model IEnumerable<Rcsa.Web.Models.CompanyMaster>
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    RcsaDb db = new RcsaDb();
+    ViewBag.Title = "CompanyDetails";
+    int count = Model.Count();
+}
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center;">Companies</h3>
+
+@using (Html.BeginForm()){    
+    <div class="searchBoxDiv">
+        <span style="float: left">
+            <input type="text" id="txtSearch" value="" name="keyword" placeholder="Search" style="width:282px;margin-left:-23px;"  />
+            <input type="submit" value="Search" id="btnSearch" class="searchButton" />
+            <input type="submit" value="Reset" id="btnReset"  name="command" class="searchButton" />
+        </span>
+        <span style="float: right;margin-top:6px;margin-right: 18px;"><strong><u>@Html.ActionLink("Add Company", "Create")</u></strong></span>
+    </div>
+    <div style="height: 25px;"></div>              
+}
+<table class="minilist-b">
+    <tr>
+        <td>
+            <div id="dvGrid">
+                @if (Model != null)
+                {
+                    var gridTest = new WebGrid(Model, canPage: true, canSort: false, rowsPerPage: 10, ajaxUpdateContainerId: "dvGrid");                    
+                    @gridTest.GetHtml(
+                tableStyle: "mGrid",
+                alternatingRowStyle: "mGrid-alternating-row",
+                          footerStyle: "pagination",
+                          mode: WebGridPagerModes.All,
+                          numericLinksCount: 10,
+                          firstText: "First",
+                          lastText: "Last",
+                          previousText: "Prev",
+                          nextText: "Next",
+                columns: new[] {                  
+                    gridTest.Column("ComapnyName",header: "Company Name"),
+                    gridTest.Column("CompanyNo",header: "Company Number"),
+                    gridTest.Column("CompanyDescription",header: "Description"),                                        
+                    gridTest.Column("",header:"",style: "grdSrNo",
+                    format: @<text>
+                    <div>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.CompanyId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.CompanyId }) 
+                    </div>
+                    </text>
+                    )
+                })
+                }
+            </div>
+            @if (@ViewBag.Mode == "Search" && Model.Count() == 0)
+            {
+                <div id="error" class="error" style="width:747px;">No records found!!!</div>
+            }
+            <style>
+                .grdSrNo {
+                    width: 18%;
+                    text-align: center;
+                }
+            </style>
+        </td>
+    </tr>
+</table>
+
+@*@using (Html.BeginForm())
+{
+    <table>
+        <tr>
+            <td>Keyword</td>
+            <td>
+                <input type="text" id="txtSearch" value="" name="keyword" /></td>
+            &nbsp  
+            <td colspan="2">
+                <input type="submit" title="Serach" id="btnSearch"  />
+                &nbsp;&nbsp;
+                <input type="submit" title="Reset" id="btnReset" value="Reset" />
+            </td>
+        </tr>
+
+    </table>
+}
+<table id="hor-minimalist-b">
+    <tr>
+        <th scope="col">Company Name</th>
+        <th scope="col">Company Number</th>
+        <th scope="col">Description</th>
+        <th><strong><u>@Html.ActionLink("Add Company", "Create")</u></strong></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+       
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ComapnyName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyNo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CompanyDescription)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.CompanyId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.CompanyId }) 
+            </td>
+        </tr>
+    }
+
+</table>*@

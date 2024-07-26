@@ -1,0 +1,287 @@
+﻿@using Rcsa.Web.Models
+@model IEnumerable<Rcsa.Web.Models.RiskManagementModel>
+@{
+    ViewBag.Title = "RiskManagement";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    int compId = Convert.ToInt32(ViewBag.compId) != 0 ? Convert.ToInt32(ViewBag.compId) : 0;
+    int deptId = Convert.ToInt32(ViewBag.deptId) != 0 ? Convert.ToInt32(ViewBag.deptId) : 0;
+    var userProfiles = db.UserProfiles.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+    int riskAssesmentId = Convert.ToInt32(ViewBag.RiskAssesmentId) != 0 ? Convert.ToInt32(ViewBag.RiskAssesmentId) : 0;
+    var riskDetails = db.RiskAssessmentMaster.Where(x => x.RiskAssessmentId == riskAssesmentId).SingleOrDefault();
+    int lastUpdateId = Convert.ToInt32(ViewBag.lastId) != 0 ? Convert.ToInt32(ViewBag.lastId) : 0;
+    // int value  =Url.RequestContext.HttpContext.Request.QueryString.AllKeys.Contains("ReturnUrl");
+    string value = Request.QueryString["editId"];
+    RiskManagementModel model = new RiskManagementModel();
+    RcsaDb db1 = new RcsaDb();
+    ViewBag.Title = "Users Report";
+    
+}
+
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript">
+    $(function () {
+
+        $('#btnSearch').click(function () {
+            debugger;
+            var comp = $('#hfCompId').val();
+            var dept = $('#hfDeptId').val();
+            var riskAssessmentName = $('#hfRiskAssesmentId').val();
+            var riskRate = $('#ddlInherentRiskRating option:selected').val();
+            var issueSave = $('#ddlIssueSeverity option:selected').val();
+            var subriskImp = $('#ddlSubriskImpact option:selected').val();
+            var subrisklike = $('#ddlSubriskLikelihood option:selected').val();
+            var mitigant = $('#ddlMitigantImportance option:selected').val();
+
+            var winW = $(window).width() - 15;
+            var winH = $(window).height() - 15;
+
+            $.ajax({
+                url: '../../Standard/RiskDetails',
+                data: JSON.stringify({
+                    compId: comp, deptId: dept, riskRating: riskRate, issueSaverty: issueSave, subriskImpact: subriskImp
+                    , subriskLikehood: subrisklike, mitigantImportance: mitigant, riskAssessmentName: riskAssessmentName
+                }),
+                type: 'POST',
+                contentType: 'application/json;',
+                dataType: 'json',
+                async: false,
+                success: function (response) {
+                    debugger;
+                    $('#error').hide();
+                    var v = response;
+                    if (v == "1") {
+                        $('#reportData').attr('src', '/ReportForms/CustomizedReport.aspx');
+                        $("#Dialog").dialog({
+                            position: { my: "center", at: "center", of: "center" },
+                            top: 30,
+                            left: 50,
+                            width: winW,
+                            height: winH,
+                            modal: true,
+                            title: 'Report'
+                        });
+                        return false;
+                    }
+                    else {
+                        $('#Dialog').hide();
+                        //$('#reportData').hide();
+                        $('#error').show();
+                        return false;
+                    }
+                }
+            });
+        });
+
+    });
+
+
+</script>
+
+<style>
+    select
+    {
+        width: 100px;
+    }
+
+    textarea, input[type=text]
+    {
+        width: 100px;
+        border-radius: 5px;
+        box-shadow: 0px 0px;
+        border: 1px solid silver;
+        padding: 2px 5px;
+        margin-bottom: 5px;
+    }
+
+    input[type=text]
+    {
+        height: 30px;
+    }
+
+    textarea
+    {
+        height: 60px;
+    }
+
+    .highlight
+    {
+        background-color: lightblue !important;
+    }
+</style>
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 15px; text-align: center;">Department Risk Report</h3>
+
+@using (Html.BeginForm())
+{
+   
+   
+    
+    <input type="hidden" id="hfCompId" name="hfCompId" value="@compId" />
+    <input type="hidden" id="hfDeptId" name="hfDeptId" value="@deptId" />
+    <input type="hidden" id="hfRiskAssesmentId" name="hfRiskAssesmentId" value="@riskAssesmentId" />
+    <input type="hidden" id="hfRiskId" name="hfRiskId" value="0" />
+    <input type="hidden" id="hfSubRiskId" name="hfSubRiskId" value="0" />
+    <input type="hidden" id="hfMitigantId" name="hfMitigantId" value="0" />
+    <input type ="hidden" id="gfvalue" name="hfname" value="@value"/>
+    
+     
+   
+    <div>
+        @*    <div style="float: left">
+            <label><strong>Company Name:</strong> </label>
+            &nbsp;&nbsp;
+            <label>@ViewBag.companyName</label>
+            <div>
+                <label><strong>Department Name:</strong> </label>
+                &nbsp;&nbsp;
+            <label>@ViewBag.departmentName</label>
+
+            </div>
+            <div>
+                <label><strong>Risk Assessment Name:</strong> </label>
+                &nbsp;&nbsp;
+            <label>@ViewBag.riskheaderName</label>
+
+            </div>
+            <div>
+                <br />
+            </div>
+        </div>*@
+        <table id="hor-minimalist-b">
+            <tr>
+                <td>
+                    <strong>Company Name:</strong>
+                </td>
+                <td>
+                    @ViewBag.companyName
+                </td>
+                <td>
+                    <strong>Department Name:</strong>
+
+                </td>
+                <td align="left">
+                    @ViewBag.departmentName
+                </td>
+
+            </tr>
+            <tr>
+                <td>
+                    <strong>Risk Assessment Name:</strong>
+
+                </td>
+                <td colspan="3">
+                    @ViewBag.riskheaderName
+                </td>
+            </tr>
+            <tr>
+
+                <th scope="col">Sub Risk Impact</th>
+                <th scope="col">Sub Risk Likelihood</th>
+                <th scope="col">Mitigant Importance</th>
+                <th scope="col">&nbsp;</th>
+
+
+            </tr>
+            <tr>
+
+                <td>
+                    @Html.DropDownList("SubRisk_Impact", new SelectList(model.LevelOfSeverityImpacts, "Value", "Text"), "Select",
+                    new { id = "ddlSubriskImpact", style = "width:140px;height:24px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("SubRisk_Likelyhood", new SelectList(model.LevelOfSeverityImpacts, "Value", "Text"), "Select",
+                    new { id = "ddlSubriskLikelihood", style = "width:140px;height:24px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("Mitigant_Importance", new SelectList(model.LevelOfSeverityImpacts, "Value", "Text"), "Select",
+                    new { id = "ddlMitigantImportance", style = "width:140px;height:24px;" })
+                </td>
+
+                <td>
+                    @*<input type="submit" value="Search" class="button1" />*@
+                    <input type="button" id="btnSearch" value="Show Report" class="button1" />
+                </td>
+
+            </tr>
+
+            <tr>
+                <td style="border: none">&nbsp;</td>
+            </tr>
+            <tr>
+                @* @if (User.IsInRole("Company"))
+                { 
+                    <th>Departments</th>
+                }
+                else
+                {
+                    <th>Companies
+                    </th>
+                    <th>Departments
+                    </th>
+                }*@
+
+                @* <th scope="col">Inherent Risk</th>*@
+                <th scope="col">Issue Severity</th>
+
+
+
+            </tr>
+
+
+            <tr>
+                @* @if (User.IsInRole("Company"))
+                {
+                    <td style="display: none;">
+                        @Html.DropDownList("CompanyId", new SelectList(db.CompaniesMaster.Where(x => x.CompanyId == @compId),
+                           "CompanyId", "ComapnyName", @compId), new { id = "ddlCompany", style = "width:140px;height:24px;" })
+                    </td>                   
+                    <td>
+                        <input type="hidden" id="hfcompId" value="@compId" />
+                        @Html.DropDownList("DepartmentID", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId),
+                           "DepartmentId", "DepartmentName"), "Select Department", new { id = "ddlDepartment", style = "width:140px;height:24px;" })
+                    </td>
+                }
+                else
+                {    
+                    <td>
+                        @Html.DropDownList("CompanyId", new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName"),
+                            "Select Company", new { id = "ddlCompany", style = "width:140px;height:24px;" })
+                    </td>
+                    <td>
+                        @Html.DropDownList("DepartmentID", new SelectList(db.DepartmentsMaster, "DepartmentId", "DepartmentName"),
+                            "Select Department", new { id = "ddlDepartment", style = "width:140px;height:24px;" })
+                    </td>
+                }*@
+                <td style="display: none">
+                    @Html.DropDownList("Inherenet_risk_rating", new SelectList(model.InherentRiskRatingOptions, "Value", "Text"),
+                        "Select", new { id = "ddlInherentRiskRating", style = "width:140px;height:24px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("Issue_Severity", new SelectList(model.LevelOfSeverityImpacts, "Value", "Text"),
+                        "Select", new { id = "ddlIssueSeverity", style = "width:140px;height:24px;" })
+                </td>
+
+
+            </tr>
+
+
+
+
+
+
+
+
+        </table>
+        <div style="clear: both;">&nbsp;</div>
+
+
+    </div>
+    <div id="Dialog" style="display: none; min-height: 600px; width: 98%">
+        <iframe id="reportData" height="95%" style="border: 0px; width: 98%"></iframe>
+    </div>
+    <div id="error" class="error1" style="display: none;">No records found!!!</div>
+ 
+}

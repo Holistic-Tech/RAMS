@@ -1,0 +1,714 @@
+﻿@model Rcsa.Web.Models.RiskManagementModel
+@{
+    ViewBag.Title = "RiskManagement";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    var userProfiles = db.UserProfiles.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+    int riskId = Model.RiskID != null ? Model.RiskID : (Convert.ToInt32(ViewBag.RiskId) != 0 ? Convert.ToInt32(ViewBag.RiskId) : 0);
+    int subRiskId = Model.SubRiskID != null ? Model.SubRiskID : (Convert.ToInt32(ViewBag.SubRiskID) != 0 ? Convert.ToInt32(ViewBag.SubRiskID) : 0);
+    int mitigantId = Model.MitigantID != null ? Model.MitigantID : (Convert.ToInt32(ViewBag.MitigantID) != 0 ? Convert.ToInt32(ViewBag.MitigantID) : 0);
+    int RiskDetailsId = Model.RiskDetailID != 0 ? Model.RiskDetailID : (Convert.ToInt32(ViewBag.RiskDetailsId) != 0 ? Convert.ToInt32(ViewBag.RiskDetailsId) : 0);
+    int compId = Convert.ToInt32(ViewBag.compId) != 0 ? Convert.ToInt32(ViewBag.compId) : 0;
+    int deptId = Convert.ToInt32(ViewBag.deptId) != 0 ? Convert.ToInt32(ViewBag.deptId) : 0;
+    int riskAssesmentId = Convert.ToInt32(ViewBag.RiskAssesmentId) != 0 ? Convert.ToInt32(ViewBag.RiskAssesmentId) : 0;
+    var company = db.CompanyUsers.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+    string targetDate = "";
+    string sharedDept = "";
+
+    if (Model != null && Model.TargetDate != null)
+    {
+        DateTime dt;
+        if(DateTime.TryParse(Model.TargetDate, out dt))
+        {
+            targetDate = dt.ToString("MM/dd/yyyy");
+        }
+        else
+        {
+            targetDate = "N/A";
+        }
+        sharedDept = Model.Shared_process_Department;
+    }
+    else
+    {
+        string dt = DateTime.Now.ToString();
+        targetDate = "N/A";//String.Format("{0:MM/dd/yyyy}", dt);//DateTime.Now.ToString("MM-dd-yyyy", System.Globalization.CultureInfo.InvariantCulture); ;
+    }
+            // string targetSharedProcessDept = "";
+
+            //if (ViewBag.SharedProcessDepartment != null)
+            //{
+            //    targetSharedProcessDept = ViewBag.SharedProcessDepartment;
+            //    var deptList = db.DepartmentsMaster.FirstOrDefault(x => x.DepartmentName == targetSharedProcessDept);
+            //    if (deptList != null)
+            //    {
+            //        sharedDept = deptList.DepartmentName;
+            //    }
+            //}
+        
+}
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#ddlCompany').val($('#hfCompId').val());
+        $('#ddlDepartments').val($('#hfDeptId').val());
+
+        if (String('@ViewBag.RiskExists') != "") {
+            confirm();
+        }
+
+        if (String('@ViewBag.Mode') == "Save" || String('@ViewBag.Mode') == "Edit") {
+            debugger;
+            $('#divRiskDetail').slideDown();
+            $('#hfIsExists').val(1);
+            $('#ddlRisks').bind("change", onSelectRisk);
+            $('#ddlSubRisks').bind("change", onSelectSubRisk);
+            $('#ddlMitigant').bind("change", onSelectMitigant);
+
+            $('#ddlRisks').prop("disabled", true);
+            $('#ddlSubRisks').prop("disabled", true);
+            $('#ddlMitigant').prop("disabled", true);
+        }
+        else {
+
+            onSelectDepartment();
+            BindMitigants();
+        }
+
+
+        $("#txtTargetDate").datepicker({
+            minDate: 0,
+            defaultDate: 'currentDate',
+            dateFormat: 'mm-dd-yy',
+            changeYear: true,
+            changeMonth: true
+        });
+
+        $('#ddlMitigant').change(function () {
+            debugger;
+            var rId = $('#ddlRisks option:selected').val();
+            var sId = $('#ddlSubRisks option:selected').val();
+            var mId = $('#ddlMitigant option:selected').val();
+            // $('#ddlMitigant').bind("change", onSelectMitigant);
+            $('#hfRiskId').val(rId);
+            $('#hfSubRiskId').val(sId);
+            $('#hfMitigantId').val(mId);
+            debugger;
+            onSelectMitigant();
+        })
+
+        $("#ddlSubRisks").change(function () {
+            BindMitigants();
+            $('#txtMitigantDesc').val("");
+        })
+
+        $("#ddlRisks").change(function () {
+            BindMitigants();
+            $('#txtMitigantDesc').val("");
+        })
+
+
+    });
+
+    function onSelectDepartment() {
+        debugger;
+        var dlCompValue = $('#hfCompId').val();
+        var dlValue = $('#hfDeptId').val();
+        $.ajax({
+            url: '../../Orm/GetAllRiskAssessmentList',
+            data: JSON.stringify({ compId: dlCompValue, deptId: dlValue }),
+            type: 'POST',
+            contentType: 'application/json;',
+            dataType: 'json',
+            async: false,
+            success: function (response) {
+                debugger;
+                var v = response;
+                if (v == "1") {
+                    BindRisks();
+                    BindSharedProcessDepartments();
+                    $('#ddlRisks').bind("change", onSelectRisk);
+                    $('#divRiskDetail').slideDown();
+                    $('#divRiskDetail').show();
+                    //$('#riskAlreadyinprogress').hide();
+                }
+                else {
+                    BindRisks();
+                    BindSharedProcessDepartments();
+                    $('#ddlRisks').bind("change", onSelectRisk);
+                    $('#divRiskDetail').slideDown();
+                    $('#divRiskDetail').show();
+                }
+            }
+        });
+    }
+
+    function onSelectRisk() {
+        debugger;
+        $('#txtSubRiskDesc').val("");
+        $('#txtMitigantDesc').val("");
+
+        BindSubRisks();
+        debugger;
+        $('#txtRiskDesc').val($("#ddlRisks > option:selected").attr("detail"));
+        $('#ddlSubRisks').bind("change", onSelectSubRisk);
+    }
+
+    function onSelectSubRisk() {
+        debugger;
+        $('#txtMitigantDesc').val("");
+        BindMitigants();
+        $('#txtSubRiskDesc').val($("#ddlSubRisks > option:selected").attr("detail"));
+        $('#ddlMitigant').bind("change", onSelectMitigant);
+    }
+
+    function onSelectMitigant() {
+        debugger;
+        if ($('#ddlMitigant').val() == "") {
+            $('#txtMitigantDesc').val("");
+        }
+        else {
+            $('#txtMitigantDesc').val($("#ddlMitigant > option:selected").attr("detail"));
+        }
+    }
+
+    function BindRisks() {
+        debugger;
+
+        var riskId = String('@ViewBag.newRiskId');
+        $.getJSON("/Risk/Risks", null, function (data) {
+            var items = "<option>-- Select Risk --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value='" + item.RiskId + "' detail='" + item.Description + "'>" + item.RiskName + "</option>";
+            });
+            $("#ddlRisks").html(items);
+            $("#ddlRisks").val(riskId);
+        });
+    }
+
+    function BindSharedProcessDepartments() {
+        debugger;
+        var Param = { CompanyId: $('#ddlCompany option:selected').attr("value") };
+        $.getJSON("/CompanyUsersReport/DepartmentList/", Param, function (data) {
+            var items = "<option>Select Department</option>";
+            $.each(data, function (i, data) {
+                items += "<option value=" + data.Value + ">" + data.Text + "</option>";
+            });
+            $("#ddlSharedProcessDept").html(items);
+            $("#ddlSharedProcessDept").val($('#hfDdlShared').val());
+
+        });
+    }
+
+    function BindSubRisks() {
+        debugger;
+        var Param = { riskId: $("#ddlRisks > option:selected").attr("value") };
+        if (Param.riskId + "" == "undefined" || Param.riskId == "") {
+            var items = "<option>-- Select Sub Risk --</option>";
+            $("#ddlSubRisks").html(items);
+            $("#txtSubRiskDesc").text("");
+
+            var items = "<option>-- Select Mitigant --</option>";
+            $("#ddlMitigant").html(items);
+            $("#txtMitigantDesc").text("");
+        }
+        else {
+            $.getJSON("/SubRisk/SubRisks", Param, function (data) {
+                var items = "<option>-- Select Sub Risk --</option>";
+                $.each(data, function (i, item) {
+                    items += "<option value='" + item.SubRiskId + "' detail='" + item.SubRiskDesc + "'>" + item.SubRiskName + "</option>";
+                });
+                $("#ddlSubRisks").html(items);
+            });
+        }
+    }
+
+    function BindMitigants() {
+        debugger;
+        var Param = { subRiskId: $("#ddlSubRisks > option:selected").attr("value") };
+
+        if (Param.subRiskId + "" == "undefined" || Param.subRiskId == "") {
+            var items = "<option>-- Select Mitigant --</option>";
+            $("#ddlMitigant").html(items);
+            $("#txtMitigantDesc").text("");
+        }
+        $.getJSON("/Mitigant/Mitigants", Param, function (data) {
+            var items = "<option>-- Select Mitigant --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value='" + item.MitigantId + "' detail='" + item.MitigantDesc + "'>" + item.MitigantName + "</option>";
+            });
+            $("#ddlMitigant").html(items);
+        });
+    }
+</script>
+
+<style>
+    select
+    {
+        width: 111px;
+    }
+
+    textarea, input[type=text]
+    {
+        width: 100px;
+        border-radius: 5px;
+        box-shadow: 0px 0px;
+        border: 1px solid silver;
+        padding: 2px 5px;
+        margin-bottom: 5px;
+    }
+
+    input[type=text]
+    {
+        height: 25px;
+    }
+
+    textarea
+    {
+        height: 50px;
+    }
+</style>
+
+<h3 class="upcoming-head" style="margin-bottom: 15px; text-align: center;">Conduct Risk Assessment</h3>
+@using (Html.BeginForm("RiskAssesmentsManagement", "Orm", FormMethod.Post))
+{
+    
+    <input type="hidden" id="hfCompId" name="hfCompId" value="@compId" />
+    <input type="hidden" id="hfDeptId" name="hfDeptId" value="@deptId" />
+    <input type="hidden" id="hfRiskId" name="hfRiskId" value="@riskId" />
+    <input type="hidden" id="hfSubRiskId" name="hfSubRiskId" value="@subRiskId" />
+    <input type="hidden" id="hfMitigantId" name="hfMitigantId" value="@mitigantId" />
+    <input type="hidden" id="hfIsExists" name="hfIsExists" value="0" />
+    <input type="hidden" id="hfOverWrite" name="hfOverWrite" value="0" />
+    <input type="hidden" id="hfAssesmentId" name="hfAssesmentId" value="@riskAssesmentId" />    
+    <input type="hidden" id="RiskDetailsId" name="RiskDetailsId" value="@RiskDetailsId" />
+    <input type="hidden" id="hfRiskDetailsId" name="hfRiskDetailsId" value="0" />
+    <input type="hidden" id="hfDdlShared" name="hfSharedProcess" value="@ViewBag.SharedProcessDepartment" />
+    <input type="hidden" id="hfSelectedButton" name="hfSelectButton" value="0" />
+    
+    @Html.ValidationSummary()        
+                   
+    <div style="width: 100%; padding-bottom: 80px;">
+        <div id="divDepartment" class="divrows" style="display: none">
+            <div class="divpanel">
+                <div align="left">
+                    <ul class="rlist">
+                        <li class="litem">Company</li>
+                        <li style="text-align: left;">
+                            @Html.DropDownListFor(x => x.CompanyId, new SelectList(db.CompaniesMaster.ToList(), "CompanyId", "ComapnyName", @compId),
+                            "-- Select Company -- ", new { id = "ddlCompany", style = "width:240px;" })
+                            @Html.HiddenFor(x => x.RiskDetailID)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="divpanel">
+                <div align="left">
+                    <ul class="rlist">
+                        <li class="litem">Department</li>
+                        <li style="text-align: left;">
+                            @Html.DropDownListFor(x => x.DepartmentID, new SelectList(db.DepartmentsMaster.ToList(), "DepartmentId", "DepartmentName", @deptId), "-- Select Department -- ", new { id = "ddlDepartments", style = "width:240px;" })
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        @*<div id="riskAlreadyinprogress" class="message error" style="display: none">
+            <h4>Sorry you can not add a risk. A risk with this department is already in progress!</h4>
+        </div>*@
+
+        <table id="hor-minimalist-b">
+            <tr>
+                <td>
+                    <strong>Company Name:</strong>
+                </td>
+                <td>
+                    @ViewBag.companyName
+                </td>
+                <td>
+                    <strong>Department Name:</strong>
+
+                </td>
+                <td align="left">
+                    @ViewBag.departmentName
+                </td>
+
+            </tr>
+        </table>
+
+
+
+
+        <div id="divRiskDetail" class="divrows">
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Company Objectives</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.CompanyObjectives, new { id = "txtCompanyObjectives", Class = "bigtext", @MaxLength = "10000" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Risks</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.DropDownListFor(x => x.RiskID, new SelectList(Model.Risks, "RiskId", "RiskName", @riskId), "-- Select Risk --",
+                            new { id = "ddlRisks", Class = "bigselect", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.RiskDescription, new { id = "txtRiskDesc", Class = "bigtext", Readonly = "readonly" })
+                        </div>
+                    </li>
+                    <li class="litem">Sub-Risks</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.DropDownListFor(x => x.SubRiskID, new SelectList(Model.SubRisks, "SubRiskId", "SubRiskName"), "-- Select Sub Risk --", new { id = "ddlSubRisks", Class = "bigselect", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.SubRiskDescription, new { id = "txtSubRiskDesc", Class = "bigtext", Readonly = "readonly" })
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Sub Risk Impact</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.SubRisk_Impact, new SelectList(Model.LevelOfSeverityImpacts, "Value", "Text"), new { id = "ddlSubriskImpact", style = "width: 111px;" })
+                    </li>
+                    <li class="litem">Sub Risk Likelihood</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.SubRisk_Likelyhood, new SelectList(Model.LevelOfSeverityImpacts, "Value", "Text"), new { id = "ddlSubriskLikelihood", style = "width: 111px;" })
+                    </li>
+                    @*
+                    <li class="litem">Inherent Risk Rating</li>
+                    <li class="ritem">@Html.DropDownListFor(x => x.Inherenet_risk_rating, new SelectList(Model.InherentRiskRatingOptions, "Value", "Text"), new { id = "ddlInherentRiskRating", style = "width: 111px;" })
+                    </li>*@
+                </ul>
+            </div>
+
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Mitigant</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.DropDownListFor(x => x.MitigantID, new SelectList(Model.Mitigants, "MitigantId", "MitigantName"), "-- Select Mitigant --", new { id = "ddlMitigant", Class = "bigselect", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.MitigantDescription, new { id = "txtMitigantDesc", Class = "bigtext", Readonly = "readonly" })
+                        </div>
+                    </li>
+                    <li class="litem">Mitigant Importance</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.Mitigant_Importance, new SelectList(Model.LevelOfSeverityImpacts, "Value", "Text"), new { id = "ddlMitigantImportance", style = "width: 111px;" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Mitigant Effectiveness</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.Mitigant_effectiveness, new SelectList(Model.MitigantEffectivenessOptions, "Value", "Text"), "-- Select --", new { id = "ddlMitigantEffectiveness", Class = "bigselect", style = "width: 111px;" })
+                    </li>
+                    @*<li class="litem">How do you use this mitigant and why it is effective?</li>
+                    <li class="ritem">@Html.TextAreaFor(m => m.Mitigant_whyEffective, new { id = "txtwhyeffective", Class = "bigtext", @MaxLength = "5000" })
+                    </li>*@
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Issue</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Issue, new { id = "txtIssue", Class = "bigtext", @MaxLength = "5000" })
+                    </li>
+                    <li class="litem">Issue Severity</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.Issue_Severity, new SelectList(Model.issueSeverity, "Value", "Text"), new { id = "ddlIssueSeverity", style = "width: 111px;" })
+                    </li>
+                    @*
+                    <li class="litem">Why is this risk being accepted?</li>
+                    <li class="ritem">@Html.TextAreaFor(m => m.Reason_Risk_acceptance, new { id = "txtwhyaccepted", Class = "bigtext", @MaxLength = "500" })
+                    </li>*@
+
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Action Plan Available?</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.ActionPlanAvailable, new SelectList(Model.IsThisRiskBeingAcceptedOption, "Value", "Text"), new { id = "ddlactionplan", style = "width: 111px;" })
+                    </li>
+
+                    <li class="litem">Action Plan</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.ActionPlan, new { id = "txtActionPlan", Class = "bigtext", @MaxLength = "5000" })
+                    </li>
+                    <li class="litem">Target Date</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.TargetDate, new { id = "txtTargetDate", @MaxLength = "20", @Value = @targetDate })
+                    </li>
+                    <li class="litem">Action Plan Status</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.ActionPlan_Status, new { id = "txtActionPlanStatus", Class = "bigtext", @MaxLength = "1000" })
+                    </li>
+                    <li class="litem">Is this risk being accepted?</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.IsThisRiskBeingAccepted, new SelectList(Model.IsThisRiskBeingAcceptedOption, "Value", "Text"), new { id = "ddlRiskBeingAccepted", style = "width: 111px;" })
+                    </li>
+
+                    <li class="litem">What risk(s) is associated with accepting this issue?</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.List_risk_associated, new { id = "txtwhatriskassociated", Class = "bigtext", @MaxLength = "5000" })
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Any financial losses associated with this risk?</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.LossesAssociatedWithThisRisk, new SelectList(Model.ActionPlanAvailableOptions, "Value", "Text"), new { id = "ddlactionplan", style = "width: 111px;" })
+                    </li>
+                    <li class="litem">Value of Loss(s)</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Losses, new { id = "txtwhyeffective", Class = "bigtext", @MaxLength = "8000" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+
+                    <li class="litem">Risk owner</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(m => m.Owner, new { id = "txtOwner", Class = "bigtext", @MaxLength = "100", style = "width: 522px;" })
+                    </li>
+                    <li class="litem">Is this risk shared ?</li>
+                    <li class="ritem">
+                        @Html.DropDownListFor(x => x.Shared_process_Department, new SelectList(Model.ActionPlanAvailableOptions, "Value", "Text"), new { id = "ddlactionplan", style = "width: 111px;" })
+                    </li>
+                    <li class="litem">Shared risk description</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Shared_process_Description, new { id = "txtSharedProcessDesc", Class = "bigtext", @MaxLength = "5000" })
+                    </li>
+                </ul>
+            </div>
+
+
+
+            <div style="text-align: center; padding-right: 30px; width: 100%;" id="divButton">
+                @if (userProfiles.IsCompanyStaff == true)
+                {
+                    <input type="submit" id="btnSave" value="Save and Continue" class="button2" name="command" style="width: 150px">
+                    <input type="submit" id="btnExit" value="Save and Exit" class="button2" name="exit" style="width: 150px">
+@* if (userProfiles.IsCompanySupervisor != false)
+                    {
+                    <input type="submit" id="btnApprove" value="Save and Approve" class="button2" name="approve" style="width: 150px">
+                    }*@
+                }
+
+                @if (userProfiles.IsCompanySupervisor == true)
+                {
+                    <input type="submit" id="btnSave1" value="Save and Continue" class="button2" name="command" style="width: 150px">    
+                    <input type="submit" id="btnExit1" value="Save and Exit" class="button2" name="exit" style="width: 150px"> 
+@*
+                    <input type="submit" id="btnApprove1" value="Save and Approve" class="button2" name="approve" style="width: 150px">
+                    *@
+@*<input type="submit" id="btnSaveComplete" value="Save & Complete" name="command" class="button2" style="width: 150px">*@
+                }
+                @if (userProfiles.IsCompanyStaff == null && userProfiles.IsCompanySupervisor == null)
+                {
+                    <input type="submit" id="btnSave2" value="Save and Continue" class="button2" name="command" style="margin-left: 30px; width: 150px">                        <input type="submit" id="btnExit2" value="Save and Exit" class="button2" name="exit" style="margin-left: 30px; width: 150px">@*
+                    <input type="submit" id="btnApprove2" value="Save and Approve" class="button2" name="approve" style="width: 150px">*@                        
+@*<input type="submit" id="btnSaveComplete" value="Save & Complete" name="command" class="button2" style="width: 150px">*@
+                }
+                
+@*
+                    <div style="float: right; clear: both; margin-bottom: 20px; margin-right: 40px;"><strong><u>@Html.ActionLink("Return to List", "RiskDetails", new { id = @riskAssesmentId, compId = @compId, deptId = @deptId })</u></strong></div>*@
+            </div>
+        </div>
+    </div>
+        
+    <div id="dialog-confirm" title="Overwrite and Complete Risk?" style="display: none">
+        <p>
+            <span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>
+            Record already exists. Do you want to overwrite?
+        </p>
+    </div>        
+}
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#btnSaveComplete").click(function () {
+                confirm();
+                return false;
+            });
+        });
+
+
+        $('#btnExit').click(function () {
+            debugger;
+            var value = "1";
+            $('#hfSelectedButton').val(value);
+        })
+
+        $('#btnExit1').click(function () {
+            debugger;
+            var value = "1";
+            $('#hfSelectedButton').val(value);
+        })
+
+        $('#btnExit2').click(function () {
+            debugger;
+            var value = "1";
+            $('#hfSelectedButton').val(value);
+        })
+
+        $('#divButton input[name="command"]').click(function () {
+            debugger;
+            var risk = $('#ddlRisks option:selected').val();
+            if (risk == "" || risk == "-- Select Risk --") {
+                alert("Please select Risk");
+                return false;
+            }
+            var subrisk = $('#ddlSubRisks option:selected').val();
+            if (subrisk == "" || subrisk == "-- Select Sub Risk --") {
+
+                alert("Please select Sub-Risk");
+                return false;
+            }
+
+            var mitigant = $('#ddlMitigant option:selected').val();
+            if (mitigant == "" || mitigant == "-- Select Mitigant --") {
+                alert("Please select Mitigant");
+                return false;
+            }
+            var dtVal = $('#txtTargetDate').val();
+            debugger;
+            if (!isDate(dtVal) && dtVal != "" && dtVal != "N/A") {
+                alert("Please enter correct date format");
+                return false;
+            }
+
+            return true;
+        });
+
+
+        $('#divButton input[name="exit"]').click(function () {
+
+            var risk = $('#ddlRisks option:selected').val();
+            if (risk == "" || risk == "-- Select Risk --") {
+                alert("Please select Risk");
+                return false;
+            }
+            var subrisk = $('#ddlSubRisks option:selected').val();
+            if (subrisk == "" || subrisk == "-- Select Sub Risk --") {
+
+                alert("Please select Sub-Risk");
+                return false;
+            }
+
+            var mitigant = $('#ddlMitigant option:selected').val();
+            if (mitigant == "" || mitigant == "-- Select Mitigant --") {
+                alert("Please select Mitigant");
+                return false;
+            }
+            var dtVal = $('#txtTargetDate').val();
+            debugger;
+            if (!isDate(dtVal) && dtVal != "" && dtVal != "N/A") {
+                alert("Please enter correct date format");
+                return false;
+            }
+
+            return true;
+        });
+
+        function confirm() {
+            $(function () {
+                $('#dialog-confirm').dialog({
+                    autoOpen: true,
+                    resizable: false,
+                    modal: true,
+                    buttons: [
+                              {
+                                  text: 'Overwrite',
+                                  name: 'command',
+                                  click: function () {
+
+                                      $('#hfOverWrite').val(1);
+                                      $('#hfIsExists').val(1);
+                                      $('#ddlRisks').val($('#hfRiskId').val());
+                                      $('#ddlSubRisks').val($('#hfSubRiskId').val());
+                                      $('#ddlMitigant').val($('#hfMitigantId').val());
+                                      $('form').submit();
+                                  }
+                              },
+                              {
+                                  text: 'Cancel',
+                                  click: function () {
+                                      $('#hfIsExists').val(1);
+                                      $('#ddlRisks').val($('#hfRiskId').val());
+                                      $('#ddlSubRisks').val($('#hfSubRiskId').val());
+                                      $('#ddlMitigant').val($('#hfMitigantId').val());
+                                      $('#RiskDetailsId').val(0);
+                                      $(this).dialog('close');
+                                  }
+                              }
+                    ]
+                });
+            });
+        }
+
+
+
+
+        function ValidateDate(dtValue) {
+            debugger;
+            var dtRegex = new RegExp(/\b\d{1,2}[\/-]\d{1,2}[\/-]\d{4}\b/);
+            return dtRegex.test(dtValue);
+        }
+
+
+        function isDate(txtDate) {
+            var currVal = txtDate;
+            if (currVal == '')
+                return false;
+            //Declare Regex 
+            var rxDatePattern = /^(\d{1,2})(\/|-)(\d{1,2})(\/|-)(\d{4})$/;
+            var dtArray = currVal.match(rxDatePattern); // is format OK?
+            if (dtArray == null)
+                return false;
+            //Checks for mm/dd/yyyy format.
+            dtMonth = dtArray[1];
+            dtDay = dtArray[3];
+            dtYear = dtArray[5];
+            if (dtMonth < 1 || dtMonth > 12)
+                return false;
+            else if (dtDay < 1 || dtDay > 31)
+                return false;
+            else if ((dtMonth == 4 || dtMonth == 6 || dtMonth == 9 || dtMonth == 11) && dtDay == 31)
+                return false;
+            else if (dtMonth == 2) {
+                var isleap = (dtYear % 4 == 0 && (dtYear % 100 != 0 || dtYear % 400 == 0));
+                if (dtDay > 29 || (dtDay == 29 && !isleap))
+                    return false;
+            }
+            return true;
+        }
+
+
+    </script>
+
+}

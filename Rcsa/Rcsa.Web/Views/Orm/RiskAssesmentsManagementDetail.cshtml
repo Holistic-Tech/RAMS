@@ -1,0 +1,423 @@
+﻿@model Rcsa.Web.Models.RiskManagementModel
+@{
+    var db = new Rcsa.Web.Models.RcsaDb();
+    ViewBag.Title = "RiskManagement";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    int compId = Convert.ToInt32(ViewBag.compId) != 0 ? Convert.ToInt32(ViewBag.compId) : 0;
+    int deptId = Convert.ToInt32(ViewBag.deptId) != 0 ? Convert.ToInt32(ViewBag.deptId) : 0;
+    int assesmentId = Convert.ToInt32(ViewBag.RiskAssesmentId) != 0 ? Convert.ToInt32(ViewBag.RiskAssesmentId) : 0;
+    var companyName = db.CompaniesMaster.FirstOrDefault(x => x.CompanyId == compId).ComapnyName;
+    string targetDate = "";
+    if (Model != null && Model.TargetDate != null)
+    {
+        string dt = Model.TargetDate;
+        targetDate = String.Format("{0:MM/dd/yyyy}", dt);
+    }
+    else
+    {
+        string dt = DateTime.Now.ToString();<a href="~/Views/Orm/RiskAssesmentsManagementDetail.cshtml">~/Views/Orm/RiskAssesmentsManagementDetail.cshtml</a>
+        targetDate = "N/A";//String.Format("{0:MM/dd/yyyy}", dt);
+    }
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#txtCompany').val($('#hfCompId').val());
+        $("#txtTargetDate").datepicker({
+            defaultDate: 'currentDate',
+            changeYear: true,
+            changeMonth: true
+        });
+    });
+
+    function onSelectDepartment() {
+        BindRisks();
+        BindSharedProcessDepartments();
+        $('#ddlRisks').bind("change", onSelectRisk);
+        $('#divDepartment').slideToggle();
+        $('#divRiskDetail').slideToggle();
+
+    }
+
+    function onSelectRisk() {
+        BindSubRisks();
+        $('#txtRiskDesc').val($("#ddlRisks > option:selected").attr("detail"));
+        $('#ddlSubRisks').bind("change", onSelectSubRisk);
+    }
+
+    function onSelectSubRisk() {
+        BindMitigants();
+        $('#txtSubRiskDesc').val($("#ddlSubRisks > option:selected").attr("detail"));
+        $('#ddlMitigant').bind("change", onSelectMitigant);
+    }
+
+    function onSelectMitigant() {
+        $('#txtMitigantDesc').val($("#ddlMitigant > option:selected").attr("detail"));
+    }
+
+    /*function BindDepartments() {
+        $.getJSON("/Department/UserDepartments", null, function (data) {
+            var items = "<option>-- Select Department --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value=" + item.DepartmentId + ">" + item.DepartmentName + "</option>";
+            });
+            $("#ddlDepartments").html(items);
+        });
+    }*/
+
+    function BindRisks() {
+        $.getJSON("/Risk/Risks", null, function (data) {
+            var items = "<option>-- Select Risk --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value='" + item.RiskId + "' detail='" + item.Description + "'>" + item.RiskName + "</option>";
+            });
+            $("#ddlRisks").html(items);
+        });
+    }
+
+    function BindSharedProcessDepartments() {
+        $.getJSON("/Department/UserDepartments", null, function (data) {
+            var items = "<option>-- Select Department --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value=" + item.DepartmentName + ">" + item.DepartmentName + "</option>";
+            });
+            $("#ddlSharedProcessDept").html(items);
+        });
+    }
+
+    function BindSubRisks() {
+        var Param = { riskId: $("#ddlRisks > option:selected").attr("value") };
+        $.getJSON("/SubRisk/SubRisks", Param, function (data) {
+            var items = "<option>-- Select Sub Risk --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value='" + item.SubRiskId + "' detail='" + item.SubRiskDesc + "'>" + item.SubRiskName + "</option>";
+            });
+            $("#ddlSubRisks").html(items);
+        });
+    }
+
+    function BindMitigants() {
+        var Param = { subRiskId: $("#ddlSubRisks > option:selected").attr("value") };
+        $.getJSON("/Mitigant/Mitigants", Param, function (data) {
+            var items = "<option>-- Select Mitigant --</option>";
+            $.each(data, function (i, item) {
+                items += "<option value='" + item.MitigantId + "' detail='" + item.MitigantDesc + "'>" + item.MitigantName + "</option>";
+            });
+            $("#ddlMitigant").html(items);
+        });
+    }
+</script>
+
+<style>
+    select
+    {
+        width: 100px;
+    }
+
+    textarea, input[type=text]
+    {
+        width: 100px;
+        border-radius: 5px;
+        box-shadow: 0px 0px;
+        border: 1px solid silver;
+        padding: 2px 5px;
+        margin-bottom: 5px;
+    }
+
+    input[type=text]
+    {
+        height: 30px;
+    }
+
+    textarea
+    {
+        height: 60px;
+    }
+
+    .bigselect, .bigtext
+    {
+        width: 95% !important;
+    }
+
+    .divrows
+    {
+        width: 100%;
+    }
+
+        .divrows .rlist
+        {
+            width: 100%;
+            list-style: none;
+            display: inline;
+            margin: 0px;
+            padding: 0px;
+        }
+
+            .divrows .rlist li
+            {
+                display: inline-block;
+            }
+
+            .divrows .rlist .ritem
+            {
+                width: 70%;
+                display: inline-block;
+                text-align: left;
+            }
+
+            .divrows .rlist .litem
+            {
+                width: 25%;
+                padding-right: 10px;
+                display: inline-block;
+                text-align: left;
+                vertical-align: top;
+                padding-top: 5px;
+            }
+
+    .divpanel
+    {
+        background-color: whitesmoke;
+        border-radius: 7px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid silver;
+        width: 95%;
+    }
+</style>
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Conduct Risk Assessment</h3>
+
+@using (Html.BeginForm())
+{
+    
+    <input type="hidden" id="hfCompId" name="hfCompId" value="@companyName" />
+    @Html.ValidationSummary()
+
+    
+    <table id="hor-minimalist-b">
+        <tr>
+            <td>
+                <strong>Company Name:</strong>
+            </td>
+            <td>
+                @ViewBag.companyName
+            </td>
+            <td>
+                <strong>Department Name:</strong>
+
+            </td>
+            <td align="left">
+                @ViewBag.departmentName
+            </td>
+
+        </tr>
+    </table>
+    
+    
+    
+    
+    <div style="width: 100%; padding-bottom: 80px;">
+
+
+        <div id="divRiskDetail" class="divrows">
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Company Objectives</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.CompanyObjectives, new { id = "txtCompanyObjectives", Class = "bigtext", @MaxLength = "10000", style = "width: 522px;" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Company</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.CompanyId, new { id = "txtCompany", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                </ul>
+            </div>
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Department</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.DepartmentName, new { Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Risks</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.TextBoxFor(x => x.RiskName, new { Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.RiskDescription, new { id = "txtRiskDesc", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                    </li>
+                    <li class="litem">Sub-Risks</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.TextBoxFor(x => x.SubRiskName, new { Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.SubRiskDescription, new { id = "txtSubRiskDesc", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Sub Risk Impact</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.SubRisk_Impact, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+                    <li class="litem">Sub Risk Likelihood</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.SubRisk_Likelyhood, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+                    @*
+                    <li class="litem">Inherent Risk Rating</li>
+                    <li class="ritem">@Html.TextBoxFor(x => x.Inherenet_risk_rating, new { Readonly = "readonly", style = "width: 492px;" })
+                    </li>*@
+                </ul>
+            </div>
+
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Mitigant</li>
+                    <li class="ritem">
+                        <div>
+                            @Html.TextBoxFor(x => x.MitigantName, new { Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                        <div>
+                            @Html.TextAreaFor(x => x.MitigantDescription, new { id = "txtMitigantDesc", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                        </div>
+                    </li>
+                    <li class="litem">Mitigant Importance</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.Mitigant_Importance, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Mitigant Effectiveness</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.Mitigant_effectiveness, new { Class = "bigtext", Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+
+                    @*<li class="litem">How do you use this mitigant and why it is effective?</li>
+                    <li class="ritem">@Html.TextAreaFor(m => m.Mitigant_whyEffective, new { id = "txtwhyeffective", Class = "bigtext", Readonly = "readonly",style="width: 522px;" })
+                    </li>*@
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Issue</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Issue, new { id = "txtIssue", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                    <li class="litem">Issue Severity</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.Issue_Severity, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+                    @*
+                    <li class="litem">Why is this risk being accepted?</li>
+                    <li class="ritem">@Html.TextAreaFor(m => m.Reason_Risk_acceptance, new { id = "txtwhyaccepted", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>*@
+
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Action Plan Available?</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.ActionPlanAvailable, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+
+                    <li class="litem">Action Plan</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.ActionPlan, new { id = "txtActionPlan", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+
+                    <li class="litem">Target Date</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.TargetDate, new { id = "txtTargetDate",  Readonly = "readonly", style = "width: 111px;", @Value = @targetDate })
+                    </li>
+                    <li class="litem">Action Plan Status</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.ActionPlan_Status, new { id = "txtActionPlanStatus", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                    <li class="litem">Is this risk being accepted?</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(m => m.IsThisRiskBeingAccepted, new { id = "txtIsThisRiskBeingAccepted", Readonly = "readonly", style = "width: 111px;" })
+
+                    </li>
+
+                    <li class="litem">What risk(s) is associated with accepting this issue?</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.List_risk_associated, new { id = "txtwhatriskassociated", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+
+                </ul>
+            </div>
+            <div class="divpanel">
+                <ul class="rlist">
+                    <li class="litem">Any financial losses associated with this risk?</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.LossesAssociatedWithThisRisk, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+
+                    <li class="litem">Value of Loss(s)</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Losses, new { id = "txtwhyeffective", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                </ul>
+            </div>
+
+            <div class="divpanel">
+                <ul class="rlist">
+
+                    <li class="litem">Risk owner</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(m => m.Owner, new { id = "txtOwner", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                    <li class="litem">Is this risk shared ?</li>
+                    <li class="ritem">
+                        @Html.TextBoxFor(x => x.Shared_process_Department, new { Readonly = "readonly", style = "width: 111px;" })
+                    </li>
+                    <li class="litem">Shared risk description</li>
+                    <li class="ritem">
+                        @Html.TextAreaFor(m => m.Shared_process_Description, new { id = "txtSharedProcessDesc", Class = "bigtext", Readonly = "readonly", style = "width: 522px;" })
+                    </li>
+                </ul>
+            </div>
+
+
+            <div>
+                @if (ViewBag.ViewType != "completed")
+                {
+                    <b><u>@Html.ActionLink("Return to List", "RiskDetails", new { id = @assesmentId, compId = @compId, deptId = @deptId })</u></b>
+                }
+                else
+                { <b><u>@Html.ActionLink("Return to List", "RiskDetails", new { id = @assesmentId, compId = @compId, deptId = @deptId, view = "completed" })</u></b> }
+
+            </div>
+            @*<div style="text-align: center; padding-right: 30px; width: 100%;">
+                <input type="submit" id="btnSave" value="Save" class="button2">
+            </div>*@
+        </div>
+
+
+    </div>
+        
+}

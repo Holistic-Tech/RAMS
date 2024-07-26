@@ -1,0 +1,257 @@
+﻿@using Rcsa.Web.Models
+@using System.Text;
+@{
+    var _entities = new Rcsa.Web.Models.RcsaDb();
+    ViewBag.Title = "UserDepartment";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    int companyId = ViewBag.companyId != null && Convert.ToString(ViewBag.companyId).Length > 0 ? Convert.ToInt32(ViewBag.companyId) : 0;
+    string role = System.Web.Security.Roles.GetRolesForUser().FirstOrDefault();
+    int currentUserId = WebSecurity.CurrentUserId;
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;"> Department Users</h3>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <input type="hidden" runat="server" value="0" id="hfNewEdit" name="hfNewEdit" />
+    <input type="hidden" value="0" id="hfUser" name="hfUser" />
+    <div id="dvRoleAssign" style="display: block;">
+        <table width="100%" style="padding: 20px 10px 45px 10px">
+            <tr>
+                <th style="font-size: 13px; font-weight: normal; color: #074886; text-align: left;">
+                    @if (role.ToLower() != "company")
+                    {
+                        <strong>Company</strong>
+                    }
+                </th>
+                <td>
+                    @if (role.ToLower() == "admin" || role.ToLower() == "consultant")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                        @Html.DropDownList("ddlCompany", new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName", companyId), "---Select---", new { id = "ddlCompany", style = "width: 230px; height:24px;", onchange = "javascript:bindDepartment();" })
+                        }
+                    }
+                    else if (role.ToLower() == "company")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            var company = db.CompanyUsers.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+                        @Html.DropDownList("ddlCompany", new SelectList(db.CompaniesMaster, "CompanyId", "ComapnyName", company.CompanyId), "---Select---", new { id = "ddlCompany", style = "width: 230px; height:24px; display:none", onchange = "javascript:bindDepartment();", @disabled = "disabled" })//, @disabled="disabled"@readonly = "readonly"
+
+                        }
+                    }
+                </td>
+                <th style="font-size: 13px; font-weight: normal; color: #074886; text-align: left;"><strong>Users</strong></th>
+                <td>
+                    @{
+                    var select = new StringBuilder();
+                    select.Append("<select id='ddlUser' name='ddlUser' style='width: 230px; height:24px;'>");
+                    select.Append("<option value=''>--- Select User ---</option>");
+                    if (role.ToLower() == "admin")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            foreach (var companyUser in db.CompanyUsers.Where(x => x.CompanyId == companyId))
+                            {
+                                select.Append("<option value=" + companyUser.UserId + ">" + companyUser.UsersProfile.UserName + "</option>");//companyUser.UsersProfile.UserName
+                            }
+                        }
+                    }
+                    else if (role.ToLower() == "consultant")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            foreach (var companyUser in db.CompanyUsers.Where(x => x.CompanyId == companyId))
+                            {
+                                select.Append("<option value=" + companyUser.UsersProfile.UserId + ">" + companyUser.UsersProfile.UserName + "</option>");
+                            }
+                        }
+                    }
+                    else if (role.ToLower() == "company")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            var company = db.CompanyUsers.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+                            foreach (var companyUser in db.CompanyUsers.Where(x => x.CompanyId == company.CompanyId))
+                            {
+                                select.Append("<option value=" + companyUser.UsersProfile.UserId + ">" + companyUser.UsersProfile.UserName + "</option>");
+                            }
+                        }
+                    }
+                    select.Append("</select>");
+                    }
+                    @MvcHtmlString.Create(@select.ToString())
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+
+                    <div style="width: 99%;" id="divContain">
+                        <br />
+                        <h4>Departments</h4>
+                        <hr />
+                        @{
+                    if (role.ToLower() == "admin" || role.ToLower() == "consultant")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            foreach (var department in db.DepartmentsMaster.Where(x => x.CompanyId == companyId))
+                            {
+                                // var details = db.UserDepartments.Where(x => x.CompanyId == companyId && x.DepartmentId == department.DepartmentId).ToList();
+                                //  foreach (var it in details)
+                                // {
+                                //    if (it.DepartmentId == department.DepartmentId)
+                                //    {
+                                { var optionValue = "MyOptions_" + department.DepartmentId; }
+                            <input type="checkbox" id="@department.DepartmentId"  name="optionDepartment" value="@department.DepartmentId"/>                                                              <label for="@department.DepartmentId">@department.DepartmentName</label>
+                                // }
+                                // else
+                                //   {
+                                //      { var optionValue = "MyOptions_" + department.DepartmentId; }
+                                //  <input type="checkbox" id="@department.DepartmentId" name="optionDepartment" value="@department.DepartmentId"/>                                                               <label for="@department.DepartmentId">@department.DepartmentName</label>
+                                //  }
+                                // }                           
+                            <br />
+                            }
+                        }
+                    }
+                    else if (role.ToLower() == "company")
+                    {
+                        using (var db = new RcsaDb())
+                        {
+                            var company = db.CompanyUsers.FirstOrDefault(x => x.UserId == WebSecurity.CurrentUserId);
+                            foreach (var department in db.DepartmentsMaster.Where(x => x.CompanyId == company.CompanyId))
+                            {
+                                { var optionValue = "MyOptions_" + department.DepartmentId; }
+                            <input type="checkbox" id="@department.DepartmentId" name="optionDepartment" value="@department.DepartmentId"/>
+                            <label for="@department.DepartmentId">@department.DepartmentName</label>
+                            <br />
+                            }
+
+                        }
+                    }
+                        }
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">&nbsp;
+                </td>
+                <td align="right">
+                    <button id="btnSave" value="Save" class="button1">Save</button>
+                </td>
+            </tr>
+            <tr id="trMessage" style="display: none">
+                <td colspan="4">
+                    <div class="success">Record updated successfully!</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+}
+
+@section scripts
+{
+
+
+    <script type="text/javascript">
+        function ConfirmEdit(user, role) {
+            ClearControls();
+            document.getElementById('hfNewEdit').value = 1;
+            document.getElementById('ddlUser').value = user;
+            document.getElementById('ddlRole').value = role;
+            $('#dvRoleAssign').slideDown('slow');
+            document.getElementById('btnNew').style.display = 'none';
+            return false;
+        }
+
+        $(document).ready(function () {
+            $('#btnSave').click(function () {
+                var selectedItems = new Array();
+                var selectDepartment = "0";
+                if (document.getElementById('ddlCompany').value == "") {
+                    alert("Please Select Company.");
+                    $('#ddlCompany').focus();
+                    return false;
+                }
+                if (document.getElementById('ddlUser').value == "") {
+                    alert("Please Select User.");
+                    $('#ddlUser').focus();
+                    return false;
+                }
+
+                $("input[name=optionDepartment]").each(function (index) {
+                    if ($(this).prop('checked') == true) {
+                        //alert($(this).val());
+                        selectedItems.push($(this).val());
+                        selectDepartment = "1";
+                    }
+                });
+                if (selectDepartment == "0") {
+                    alert("Please Select Department.");
+                    return false;
+                }
+                var _companyID = $('#ddlCompany').val();
+                var _userID = $('#ddlUser').val();
+                $.ajax({
+                    type: "POST",
+                    url: "/Security/UpdateUserDepartment/",
+                    data: JSON.stringify({ CompanyID: _companyID, UserID: _userID, departments: selectedItems }),// 
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    async: true,
+                    success: function (response) {
+                        //PosttblContractWorkFlowSuccess(data);           
+                        $("#trMessage").show();
+                    },
+                    failure: function (response) {
+                        //alert(response);
+                    }
+                });
+                //return false;
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        function bindDepartment() {
+            window.location = "/Security/UserDepartment/" + $("#ddlCompany").val(); //
+        }
+
+        $("#ddlUser").change(function () {
+            debugger;
+            var id = $(this).val();
+            var compnyId = $('#ddlCompany option:selected').val();
+            // jQuery.support.cors = true;
+            $.ajax({
+                type: "GET",
+                url: '/api/common/GetDepartmentsByUserId?userId=' + id + '&companyId=' + compnyId + '',
+                success: function (response) {
+                    var deptId = "";
+                    $('#divContain input:checkbox').each(function () {
+                        var isFound = false;
+                        for (var i = 0 ; i < response.length; i++) {
+                            if (response[i] == $(this).val()) {
+                                isFound = true;
+                            }
+                        }
+
+                        if (isFound) {
+                            $(this).attr("checked", true);
+                        }
+                        else {
+                            $(this).attr("checked", false);
+                        }
+                    });
+                },
+                failure: function (response) {
+
+                }
+            });
+        });
+
+    </script>
+
+
+}

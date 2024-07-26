@@ -1,0 +1,302 @@
+﻿@model IEnumerable<Rcsa.Web.Models.RiskAssessmentMaster>
+
+@{
+    ViewBag.Title = "SpecificTypeRisk";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+    var db = new Rcsa.Web.Models.RcsaDb();
+    List<Rcsa.Web.Models.CompanyMaster> companyMaster = new List<Rcsa.Web.Models.CompanyMaster>();
+    Rcsa.Web.Models.RiskAssessmentMaster riskHeader = new Rcsa.Web.Models.RiskAssessmentMaster();
+    var details = db.RiskDetails.ToList();
+    int compId = ViewBag.CompId != null ? Convert.ToInt32(ViewBag.CompId) : 0;
+    int deptId = ViewBag.DeptId != null ? Convert.ToInt32(ViewBag.DeptId) : 0;
+    if (User.IsInRole("Admin"))
+    {
+        companyMaster = db.CompaniesMaster.ToList();
+    }
+    if (User.IsInRole("Consultant"))
+    {
+        companyMaster = db.CompaniesMaster.ToList();
+        //var companyUsers = db.CompanyUsers.Where(x => x.CreatedBy == WebSecurity.CurrentUserId).ToList();
+        //if (companyUsers != null && companyUsers.Count > 0)
+        //{
+        //    foreach (var item in companyUsers)
+        //    {
+        //        var company = db.CompaniesMaster.FirstOrDefault(x => x.CompanyId == item.CompanyId);
+        //        companyMaster.Add(company);
+        //    }
+        //}
+    }
+    if (User.IsInRole("Company"))
+    {
+        var companyUsers = db.CompanyUsers.Where(x => x.UserId == WebSecurity.CurrentUserId).ToList();
+        compId = companyUsers.FirstOrDefault().CompanyId;
+        if (companyUsers != null && companyUsers.Count > 0)
+        {
+            foreach (var item in companyUsers)
+            {
+                var company = db.CompaniesMaster.FirstOrDefault(x => x.CompanyId == item.CompanyId);
+                companyMaster.Add(company);
+            }
+        }
+    }
+    
+}
+
+<script>
+    $(document).ready(function () {
+        //var compId = $('#ddlCompany option:selected').val();
+        //if (compId > 0) {
+        //    $('#ddlDepartments').removeAttr("disabled");
+        //}
+
+        //loadgrid();
+
+        $("#ddlCompany").change(function () {
+            //alert("company");
+            loadgrid();
+            var Param = { CompanyId: $('#ddlCompany option:selected').attr("value") };
+            $.getJSON("/CompanyUsersReport/DepartmentList/", Param, function (data) {
+                var items = "<option>Select Department</option>";
+                $.each(data, function (i, data) {
+                    items += "<option value=" + data.Value + ">" + data.Text + "</option>";
+                    $('#ddlDepartments').removeAttr("disabled");
+                });
+                $("#ddlDepartments").html(items);
+            });
+        });
+
+        var deptId = $('#ddlDepartments option:selected').val();
+        if (deptId != "") {
+            $('#searchBoxDivs').show();
+            // $('#gridData').show();
+        }
+        else {
+            $('#searchBoxDivs').hide();
+            //$('#gridData').hide();
+        }
+    });
+
+    function loadgrid() {
+        debugger;
+        var compId = $('#ddlCompany option:selected').val();
+        var deptId = $('#ddlDepartments option:selected').val();
+        $.ajax({
+            url: '../../Standard/GetAllRiskAssessmentList',
+            data: JSON.stringify({ compId: compId, deptId: deptId }),
+            type: 'POST',
+            contentType: 'application/json;',
+            dataType: 'json',
+            async: false,
+            success: function (response) {
+                debugger;
+                var v = response;
+                if (v == "1") {
+                    $('#hfCompId').val(compId);
+                    $('#hfDeptId').val(deptId);
+                    $('#searchBoxDivs').show();
+                    $('#gridData').show();
+                    $('form').submit();
+                }
+                else {
+                    $('#hfCompId').val(compId);
+                    $('#hfDeptId').val(deptId);
+                    $('#searchBoxDivs').show();
+                    $('#gridData').show();
+                    $('form').submit();
+                    //$('#riskAlreadyinprogress').show();
+                    //$('#searchBoxDivs').hide();
+                    //$('#gridData').hide();
+                    //$('#RiskAssesmentDiv').hide();
+
+                    return false;
+                }
+            }
+        });
+
+
+    }
+
+    //function displayNewRiskAssesment() {
+    //    var compId = $('#ddlCompany option:selected').val();
+    //    var deptId = $('#ddlDepartments option:selected').val();
+    //    $('#hfCompId').val(compId);
+    //    $('#hfDeptId').val(deptId);
+    //    $('#ddlCompany').attr('disabled', 'disabled');
+    //    $('#ddlDepartments').attr('disabled', 'disabled');
+    //    $('#searchBoxDivs').hide();
+    //    $('#RiskAssesmentDiv').show();
+
+    //}
+
+    function cancelRiskAssesment() {
+        $('#ddlCompany').removeAttr("disabled");
+        $('#ddlDepartments').removeAttr("disabled");
+        $('#searchBoxDivs').show();
+        $('#RiskAssesmentDiv').hide();
+    }
+    //$("#btnCancel").click(function () {
+    //    $('#ddlCompany').removeAttr("disabled");
+    //    $('#ddlDepartments').removeAttr("disabled");
+    //    $('#searchBoxDiv').show();
+    //    $('#RiskAssesmentDiv').hide();
+    //});
+
+
+</script>
+<link href="~/Content/grid.css" rel="stylesheet" />
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center">Specific Type Risk Report</h3>
+
+@using (Html.BeginForm())//"SpecificTypeRisk", "Standard", new { cId = @compId, dId = @deptId }
+{    
+    <input type="hidden" id="hfCompId" name="hfCompId" value="0" />
+    <input type="hidden" id="hfDeptId" name="hfDeptId" value="0" />
+    <div style="width: 100%;">
+        <div id="divDepartment" class="divrows">
+            @if (User.IsInRole("Company"))
+            {   
+                <div class="divpanel" style="display: none">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Company</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlCompany", new SelectList(@companyMaster, "CompanyId", "ComapnyName", @compId),
+                                "-- Select Company -- ", new { id = "ddlCompany", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div> 
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Department</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlDepartments", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId).ToList(),
+                               "DepartmentId", "DepartmentName", @deptId), "-- All Department -- ",
+                                new { id = "ddlDepartments", onchange = "loadgrid()", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div>       
+            }
+            else
+            {
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Company</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlCompany", new SelectList(@companyMaster, "CompanyId", "ComapnyName", @compId),
+                                "-- Select Company -- ", new { id = "ddlCompany", style = "width:240px;" })
+                            </li>
+                        </ul>
+                    </div>
+                </div> 
+                <div class="divpanel">
+                    <div align="left">
+                        <ul class="rlist">
+                            <li class="litem">Department</li>
+                            <li style="text-align: left;">
+                                @Html.DropDownList("ddlDepartments", new SelectList(db.DepartmentsMaster.Where(x => x.CompanyId == @compId).ToList(),
+                               "DepartmentId", "DepartmentName", @deptId), "-- All Department -- ", new
+                               {
+                                   id = "ddlDepartments",
+                                   onchange = "loadgrid()",
+                                   style = "width:240px;"
+                               })
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+       
+    <div id="riskAlreadyinprogress" class="message error" style="display: none">
+        <h4>Sorry you can not add a risk. A risk with this department is already in progress!</h4>
+    </div>@*       
+        
+    <div class="searchBoxDiv" id="searchBoxDivs" style="display: none">
+        <span style="float: right; margin-top: 6px; margin-right: 18px;"><strong><u>
+            <a href="#" onclick="displayNewRiskAssesment()">Start New</a>
+          
+        </u></strong>
+        </span>
+    </div>  
+    
+    *@<div class="divrows" id="RiskAssesmentDiv" style="display: none">
+        <div class="divpanel">
+            <div align="left">
+                <ul class="rlist">
+                    <li class="litem">Risk Assessment Name</li>
+                    <li style="text-align: left;">
+                        <input type="text" id="txtRiskAssesmentName" value="" name="txtRiskAssesmentName" placeholder="Risk Assessment Name"
+                            style="width: 238px; height: 24px; margin-bottom: 20px;" />
+                    </li>
+                </ul>
+            </div>
+            <span style="margin-left: -164px;">
+                <input type="submit" value="Save & Continue" id="btnSave" class="searchButton" style="width: 115px;" />
+                <input type="button" id="btnCancel" value="Cancel" class="searchButton" onclick="cancelRiskAssesment()" /></span>
+        </div>
+    </div>  
+             
+}
+<div style="height: 25px;"></div>
+<div id="gridData" style="display: block">
+    <table class="minilist-b">
+        <tr>
+            <td>
+                <div id="dvGrid">
+                    @if (Model != null)
+                    {
+                        var gridTest = new WebGrid(Model, canPage: true, canSort: false, rowsPerPage: 10, ajaxUpdateContainerId: "dvGrid");
+                        // gridTest.Bind(Model, rowCount: 3, autoSortAndPage: true);
+                        // gridTest.Pager(mode: WebGridPagerModes.All);
+                        //  <div id="myGrid">
+                        @gridTest.GetHtml(
+                           tableStyle: "mGrid",
+                            alternatingRowStyle: "mGrid-alternating-row",
+                            footerStyle: "pagination",
+                            mode: WebGridPagerModes.All,
+                            numericLinksCount: 10,
+                             firstText: "First",
+                             lastText: "Last",
+                             previousText: "Prev",
+                             nextText: "Next",
+                columns: new[]{
+                    gridTest.Column("InsertedDate", header: "Date", format: (item) => String.Format("{0:MM/dd/yyyy}", item.InsertedDate)),
+                    gridTest.Column("RiskAssessmentName", header: "Name"),
+                    gridTest.Column("Status", header: "Status", format: (item) => (item.Status != "C" ? "In Progress" : "Completed")),
+                    gridTest.Column("", header: "", style: "grdSrNo",
+                    format: @<text>
+                        <div>
+                            @if (!User.IsInRole("Company"))
+                            {  
+                                @Html.ActionLink("View", "SpecificRiskDetails", new { id = item.RiskAssessmentId, compId = @compId, deptId = @deptId })
+                            }
+                            else
+                            {
+                                @Html.ActionLink("View", "SpecificRiskDetails", new { id = item.RiskAssessmentId, compId = @compId, deptId = @deptId })
+                            }
+                        </div>
+                        </text>
+)
+})
+                        // </div>
+                    }
+                    else
+                    {
+                        <span><b>No Record Found!!!</b></span>
+                    }
+                </div>
+                <style>
+                    .grdSrNo
+                    {
+                        width: 25%;
+                        text-align: center;
+                    }
+                </style>
+            </td>
+        </tr>
+    </table>
+</div>

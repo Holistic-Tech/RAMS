@@ -1,0 +1,39 @@
+﻿@using Rcsa.Web.Models
+@model Rcsa.Web.Models.CompanyMaster
+
+@{
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align:center">Add Company</h3>
+<div class="form1">
+    @using (Html.BeginForm())
+    {
+        @Html.ValidationSummary(false)
+    
+        <label>Company Name <span class="requiredFields">*</span></label>
+        @Html.TextBoxFor(model => model.ComapnyName, new {@MaxLength="100"})
+        <div class="clear"> </div>
+        <label>Company Number</label>
+        @Html.TextBoxFor(model => model.CompanyNo, new {@MaxLength="100"})
+        <div class="clear"> </div>
+        <label>Contact Name</label>
+        @Html.TextBoxFor(model => model.ContactName, new {@MaxLength="50"})
+        <div class="clear"> </div>
+        <label>Phone</label>
+        @Html.TextBoxFor(model => model.Phone, new {@MaxLength="30"})
+        <div class="clear"> </div>
+        <label>Address</label>
+        @Html.TextAreaFor(model => model.CompanyAddress, new { style = "width: 340px; height: 60px;", @MaxLength="2000" })
+        <div class="clear"> </div>
+        <label>Description</label>
+        @Html.TextAreaFor(model => model.CompanyDescription, new {@MaxLength="5000"})
+        <div class="clear">&nbsp;</div>
+        <br/>
+        <label>&nbsp;</label>
+        <button  value="Create" class="button1">Create</button>
+        <div class="clear"> </div>
+        <br/>
+    }
+</div>
+<div class="clear"> </div>

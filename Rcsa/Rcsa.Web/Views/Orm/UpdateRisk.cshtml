@@ -1,0 +1,47 @@
+﻿@model IEnumerable<Rcsa.Web.Models.RiskDetailsModel>
+
+@{
+    ViewBag.Title = "DepartmentRisks";
+    Layout = "~/Views/Shared/_SubLayout.cshtml";
+}
+
+
+<h3 class="upcoming-head" style="margin-bottom: 5px; text-align: center;">Risk Assessment Header</h3>
+<table id="hor-minimalist-b">
+    <tr>
+        <th scope="col">Department</th>
+        <th scope="col">Risk</th>
+        <th scope="col">Sub-Risk</th>
+        <th scope="col">Status</th>
+        <th align="right"></th>
+    </tr>
+    @if (!Model.Any())
+    {
+        <tr>
+            <td colspan="5"><div class="warning">No record found!</div></td>
+        </tr>
+    }
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DepartmentMaster.DepartmentName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RiskMaster.RiskName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SubRiskMaster.SubRiskName)
+            </td>
+            <td>
+                <label>Not Completed</label>
+            </td>
+            <td align="right">
+                @Html.ActionLink("Edit Assessment", "RiskManagement", new { id = item.RiskDetailID }) 
+                <span>|</span> 
+                @Html.ActionLink("Review Assessment", "RiskManagementDetail", new { id = item.RiskDetailID }) 
+            </td>
+        </tr>
+    }
+
+</table>
