@@ -1,0 +1,197 @@
+.ddsmoothmenu{
+
+}
+
+.ddsmoothmenu ul{
+z-index:100;
+margin: 0;
+padding: 0;
+list-style-type: none;
+}
+
+/*Top level list items*/
+.ddsmoothmenu ul li{
+position: relative;
+display: inline;
+float: left;
+}
+
+/*Top level menu link items style*/
+.ddsmoothmenu ul li a{
+display: block;
+color: white;
+padding: 15px 45px;
+border-right: 1px solid #2f599a;
+color: #2d2b2b;
+text-decoration: none;
+}
+
+* html .ddsmoothmenu ul li a{ /*IE6 hack to get sub menu links to behave correctly*/
+display: inline-block;
+}
+
+.ddsmoothmenu ul li a:link, .ddsmoothmenu ul li a:visited{
+color: white;
+}
+
+.ddsmoothmenu ul li a.selected{ /*CSS class that's dynamically added to the currently active menu items' LI A element*/
+background: #4874ba; 
+color: #fff;
+}
+
+.ddsmoothmenu ul li a:hover{
+background: #4874ba; 
+color: #fff;
+}
+	
+/*1st sub level menu*/
+.ddsmoothmenu ul li ul{
+position: absolute;
+left: 0;
+display: none; /*collapse all sub menus to begin with*/
+visibility: hidden;
+}
+
+/*Sub level menu list items (undo style from Top level List Items)*/
+.ddsmoothmenu ul li ul li{
+display: list-item;
+float: none;
+}
+
+/*All subsequent sub menu levels vertical offset after 1st level sub menu */
+.ddsmoothmenu ul li ul li ul{
+top: 0;
+}
+
+/* Sub level menu links style */
+.ddsmoothmenu ul li ul li a{
+font: normal 13px Verdana;
+width: 160px; /*width of sub menus*/
+padding:8px 5px;
+margin: 0;
+border-top-width: 0;
+border-bottom: 1px solid #4874ba;
+background: #4874ba; /* Old browsers */
+/* IE9 SVG, needs conditional override of 'filter' to 'none' */
+background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzQ4NzRiYSIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMzYzVmOWIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+background: -moz-linear-gradient(top,  #4874ba 0%, #3c5f9b 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#4874ba), color-stop(100%,#3c5f9b)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  #4874ba 0%,#3c5f9b 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  #4874ba 0%,#3c5f9b 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  #4874ba 0%,#3c5f9b 100%); /* IE10+ */
+background: linear-gradient(to bottom,  #4874ba 0%,#3c5f9b 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#4874ba', endColorstr='#3c5f9b',GradientType=0 ); /* IE6-8 */
+
+}
+
+/* Holly Hack for IE \*/
+* html .ddsmoothmenu{height: 1%;} /*Holly Hack for IE7 and below*/
+
+
+/* ######### CSS classes applied to down and right arrow images  ######### */
+
+.downarrowclass{
+	position: absolute;
+	top: 20px;
+	right: 45px;
+}
+
+.rightarrowclass{
+	position: absolute;
+	top: 6px;
+	right: 5px;
+}
+
+/* ######### CSS for shadow added to sub menus  ######### */
+
+.ddshadow{ /*shadow for NON CSS3 capable browsers*/
+position: absolute;
+left: 0;
+top: 0;
+width: 0;
+height: 0;
+background: silver;
+}
+
+.toplevelshadow{ /*shadow opacity for NON CSS3 capable browsers. Doesn't work in IE*/
+opacity: 0.8;
+}
+
+
+
+
+.selectedHeaderMenu a
+	{
+	text-decoration:underline !important;
+	/*background-color:Silver;
+	color: #305D00 !important;*/
+	color:#1a69b6 !important;
+	font-weight:bold;
+	font-size:11px;
+	}
+.arrowlistmenu1 ul li a:hover
+	{
+	/*text-decoration:underline !important;*/
+	font-size:13px;
+	color: #1a69b1 !important;
+	}
+
+.arrowlistmenu1{
+width: 100%; background:url(/images/navi_a.jpg) repeat-y; /*width of accordion menu*/}
+
+.arrowlistmenu1 .menuheader
+
+{ 
+border-bottom: 1px dotted #7e7d7d;
+padding: 8px 0 8px 8px; /*header text is indented 10px*/
+cursor: pointer;
+background: url(/images/navi_hover.jpg) repeat-y;
+text-align:left;
+padding-left:10px;
+font-family:"Open Sans"; font-size:14px; color:#074886;
+}
+
+h3 {font-family:"Open Sans"; font-size:34px; color:#074886;}
+
+
+
+.arrowlistmenu1 .openheader{ /*CSS class to apply to expandable header when it's expanded*/}
+.arrowlistmenu1 ul{ /*CSS for UL of each sub menu*/
+list-style-type:none;
+margin: 0 0 0 25px;
+padding: 0;
+font-family:"Open Sans";
+text-align:left;
+
+/*bottom spacing between each UL and rest of content*/}
+.arrowlistmenu1 ul li{
+padding-bottom: 0px;/*bottom spacing between menu items*/}
+
+.arrowlistmenu1 ul li a{
+
+font-family:"Open Sans"; font-size:13px; color:#074886;
+display: block;
+padding: 8px 0 8px 0;
+padding-left: 10px; /*link text is indented 19px*/
+text-decoration: none;
+border-bottom: 1px dotted #dadada;}
+
+
+/*
+.subcategoryitems{margin:0px;}
+.subcategoryitems ul{list-style:none; padding:0px 0px 0px 0px; margin:0px 0px 0px 0px; text-decoration:none; vertical-align:middle;}
+.subcategoryitems ul li{font-family:"Open Sans"; font-size:14px; color:#074886;padding:0px 0px 0px 0px;text-decoration:none; vertical-align:middle;border-bottom:1px dotted #7e7d7d;line-height:35px;margin-left:0px;text-align:left;}
+.subcategoryitems li a {font-family:"Open Sans"; font-size:14px;color:#074886;text-decoration:none; vertical-align:middle; padding-left:10px;}
+.subcategoryitems a{ text-decoration:none;}
+.subcategoryitems li a:hover{color:#032954;}*/
+
+
+
+
+
+
+
+
+
+
+
